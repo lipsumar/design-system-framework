@@ -1,6 +1,6 @@
 {
   "name": "design-system-framework",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A simple framework to create living design systems",
   "main": "server.js",
   "scripts": {
