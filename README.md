@@ -4,14 +4,6 @@ Build living styleguides and make sure they stay up to date.
 
 ![Design System Framework UI](resources/documentation/dsf-ui.png)
 
-Main features:
-
-- Handle components separately
-- Backend agnostic
-- Generate test files for all components
-- Watches you work and rebuilds accordingly
-- Reinforces re-use of components
-- Generates a documentation for developers, designers and editors
 
 ---
 
@@ -72,8 +64,11 @@ Provided a small configuration, DFS can generate the smallest files possible for
 
 **Also:**
 
-- makes refactoring much easier
-- statistics for each component:
+- Makes refactoring much easier
+- Reinforces re-use of components
+- Backend agnostic
+- Generates test files for all components
+- Statistics for each component:
   - code size
   - dependencies
 
