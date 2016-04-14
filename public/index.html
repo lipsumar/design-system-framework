@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>DSF</title>
+
+	<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/github.min.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+
+</head>
+<body>
+	<div class="app">
+		<div class="sidebar">
+			<div class="brand"><span>Design System Framework</span></div>
+			<div class="js-insert-menu"></div>
+			<!-- <nav class="group">
+				<div class="group__title">Components</div>
+				<div class="group__content">
+					<a href="#{}" class="item">Something</a>
+					<a href="#{}" class="item">Foo bar</a>
+					<a href="#{}" class="item">Hello there</a>
+					<a href="#{}" class="item">Mysterious item</a>
+					<a href="#{}" class="item">Last item</a>
+				</div>
+			</nav>
+			<div class="group">
+				<div class="group__title">Other cool stuff</div>
+				<div class="group__content">
+					<a href="#{}" class="item item--active">Something</a>
+					<a href="#{}" class="item">Foo bar</a>
+					<a href="#{}" class="item">Hello there</a>
+					<a href="#{}" class="item">Mysterious item</a>
+					<a href="#{}" class="item">Last item</a>
+				</div>
+			</div> -->
+		</div>
+		<div class="main">
+			<header class="header">
+				<div class="header__suptitle">Components</div>
+				<h1 class="header__title">Something</h1>
+			</header>
+			<div class="component">
+				<iframe class="component__iframe" frameborder="0"></iframe>
+			</div>
+			<div class="component-documentation">
+				<nav class="navigation-tabs">
+					<a href="#{}" class="navigation-tabs__item navigation-tabs__item--active" data-tab="doc">Documentation</a>
+					<a href="#{}" class="navigation-tabs__item" data-tab="source">Source</a>
+				</nav>
+				<div class="tab-content tab-content--active" data-tab="doc">
+					<h2 class="doc-title">Overview</h2>
+					<p>This component is used to present something. Here some other helpful text.</p>
+
+					<h2 class="doc-title">How to use it</h2>
+					<p>Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Curabitur blandit tempus porttitor. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+				</div>
+				<div class="tab-content" data-tab="source">
+					<div class="cols">
+						<div class="col-1-2">
+							<h2 class="doc-title">CSS</h2>
+<pre><code class="html">.the-component{
+	background-color: #00BFA5;
+	padding:1em 2em;
+	text-align: center;
+	color:#FFF;
+	border-radius: 3px;
+	overflow: hidden;
+}
+</code></pre>
+						</div>
+						<div class="col-1-2">
+							<h2 class="doc-title">Markup</h2>
+<pre><code class="html">&lt;div class="the-component"&gt;
+	Ze component
+&lt;/div&gt;
+</code></pre>
+						</div>
+
+					</div>
+
+
+				</div>
+
+
+			</div>
+		</div>
+	</div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+	<script>if(typeof hljs !== 'undefined') hljs.initHighlightingOnLoad();</script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+(function(){
+	var $ = document.querySelector.bind(document),
+		$$ = document.querySelectorAll.bind(document);
+
+	// init tabs
+	var tabs = $$('.navigation-tabs__item');
+	[].forEach.call(tabs, function(tab){
+		tab.addEventListener('click', function(e){
+			e.preventDefault();
+			var el = e.currentTarget,
+				tabId = el.getAttribute('data-tab');
+			$('.navigation-tabs__item--active').classList.remove('navigation-tabs__item--active');
+			el.classList.add('navigation-tabs__item--active');
+			$('.tab-content--active').classList.remove('tab-content--active');
+			$('.tab-content[data-tab="' + tabId + '"]').classList.add('tab-content--active');
+		});
+	});
+
+
+	function renderComponentsList(components){
+		var html = '<div class="group"><div class="group__title">Components</div>';
+		components.forEach(function(component){
+			html+='<div class="item" data-component="'+component.id+'">'+component.id+'</div>';
+		});
+		html+= '</div>';
+		$('.js-insert-menu').innerHTML = html;
+
+		var items = document.querySelectorAll('.item');
+		[].forEach.call(items, function(itemEl){
+			itemEl.addEventListener('click', function(e){
+				var el = e.currentTarget,
+					componentId = el.getAttribute('data-component');
+				selectComponent(componentId);
+
+
+			});
+		});
+	}
+
+	function selectComponent(componentId){
+		$('.item--active') && $('.item--active').classList.remove('item--active');
+		$('.item[data-component="'+componentId+'"]').classList.add('item--active');
+		$('iframe').src = '/build/' + componentId;
+		$('.header__title').innerHTML = componentId;
+	}
+
+	fetch('/components')
+		.then(function(resp){
+			return resp.json();
+		})
+		.then(renderComponentsList);
+
+
+	// init socket
+	var socket = io();
+	socket.on('rebuild', function(resp){
+		console.log('rebuild', resp);
+		selectComponent(resp.id);
+	});
+
+}());
+	</script>
+</body>
+</html>
