@@ -1,20 +1,19 @@
-var pathUtils = require('../lib/utils/path.js'),
+var ComponentBase = require('./ComponentBase.js'),
+	pathUtils = require('../lib/utils/path.js'),
 	path = require('path'),
 	mkdirp = require('mkdirp'),
 	fs = require('fs'),
 	async = require('async'),
 	glob = require('glob');
 
-var CONFIG = require('../options.json');
 
 //var partialsRegex = /\{\{> ?([a-zA-Z\/\-_]+)/gm;
 
 
 function Component(options){
-	this.path = options.path;
-	this.dsf = options.dsf;
-	this.absPath = pathUtils.absolute(this.path);
-	this.id = pathUtils.removeAbsPath(this.absPath);
+	ComponentBase.call(this, options);
+
+	this.id = options.id;
 	this.buildPath = path.join(__dirname, '../public/_built/' + this.id);///@TODO find something more elegant than path.join(__dirname, ) to reference preoject files
 	this.standaloneCssPath = path.join(this.buildPath + '/standalone.css');
 	this.standaloneCssPublicPath = '/_built/' + this.id + '/standalone.css';
@@ -24,6 +23,7 @@ function Component(options){
 	this.missingPartial = false;
 
 }
+Component.prototype = Object.create(ComponentBase.prototype);
 
 
 Component.prototype.build = function(callback) {
@@ -190,10 +190,7 @@ Component.prototype.render = function(context) {
 	return '';
 };
 
-///@TODO inherit this
-Component.prototype.getGlobPath = function(type) {
-	return path.join(this.absPath, CONFIG.glob[type]);
-};
+
 
 
 

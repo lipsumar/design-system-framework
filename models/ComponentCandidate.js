@@ -1,14 +1,12 @@
-var pathUtils = require('../lib/utils/path.js'),
+var ComponentBase = require('./ComponentBase.js'),
 	glob = require('glob'),
 	path = require('path'),
 	async = require('async');
 
-var CONFIG = require('../options.json');
-
-function ComponentCandidate(path){
-	this.path = path;
-	this.absPath = pathUtils.absolute(path);
+function ComponentCandidate(options){
+	ComponentBase.call(this, options);
 }
+ComponentCandidate.prototype = Object.create(ComponentBase.prototype);
 
 ComponentCandidate.prototype.resolve = function(callback) {
 	var self = this;
@@ -29,8 +27,6 @@ ComponentCandidate.prototype.hasResource = function(type, callback) {
 	});
 };
 
-ComponentCandidate.prototype.getGlobPath = function(type) {
-	return path.join(this.absPath, CONFIG.glob[type]);
-};
+
 
 module.exports = ComponentCandidate;
