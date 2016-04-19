@@ -69,7 +69,12 @@ Component.prototype.resolveDependencies = function(callback) {
 		}
 	}
 
-	this.dependencies = this.baseDependencies.concat(dependencies);
+	if(this.isBaseCss){
+		this.dependencies = dependencies;
+	}else{
+		this.dependencies = this.baseDependencies.concat(dependencies);
+	}
+
 
 	if(this.dependencies.length > 0){
 		this.dsf.whenLoaded(this.dependencies, this.addDependencies.bind(this, callback));
@@ -83,7 +88,9 @@ Component.prototype.addDependencies = function(callback) {
 	var dependecyCss = '';
 	this.dependencies.forEach(function(dependencyId){
 		var dependency = this.dsf.getComponent(dependencyId);
-
+		if(dependency.isBaseCss){
+			return;
+		}
 		dependecyCss+='\n\n/* dependency: '+dependencyId+' */\n' + dependency.getCss(true) + '\n';
 
 
@@ -172,7 +179,7 @@ Component.prototype.cacheConfig = function(callback) {
 };
 
 Component.prototype.buildStandaloneCss = function(callback) {
-	var baseCss = this.dsf.getBaseCss(), ///@TOO components defined as base should not get this
+	var baseCss = this.isBaseCss ? '' : this.dsf.getBaseCss(),
 		componentCss = this.getCss(),
 		dependecyCss = this.cache.cssDependencies || '';
 		css = baseCss + componentCss + dependecyCss; // dependencies after component so user can't override dependencies

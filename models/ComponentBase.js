@@ -1,15 +1,18 @@
 var pathUtils = require('../lib/utils/path.js'),
-	path = require('path');
+	path = require('path'),
+	_ = require('lodash');
 
 function ComponentBase(options){
 	this.options = options || {};
 	this.dsf = options.dsf;
 	this.path = options.path;
 	this.absPath = pathUtils.absolute(this.path);
+	this.config = _.merge({}, this.dsf.getOptions(), options.config);
 }
 
+
 ComponentBase.prototype.getGlobPath = function(type) {
-	return path.join(this.absPath, this.dsf.getOptions().glob[type]);
+	return path.join(this.absPath, this.config.glob[type]);
 };
 
 
