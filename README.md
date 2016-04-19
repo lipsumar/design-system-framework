@@ -119,3 +119,81 @@ and simply run:
 `$ npm run dsf`
 
 
+## Configuration
+
+You can configure DSF via a file called `options.json` at the root of your project.
+
+### `components-path`
+
+**Default**: `"Components/"`
+
+The path to a directory containing your components.
+
+**Example**:
+
+```json
+{
+	"components-path": "src/components"
+}
+```
+
+### `component-path` (singular)
+
+**Default**: _none_
+
+The path to a directory containing **a single** component.
+
+**Example**:
+
+```json
+{
+	"component-path": "node_modules/normalize.css/"
+}
+```
+
+
+### `external-components`
+
+**Default**: _none_
+
+An object containing other components, such as a CSS reset or framework.
+
+The key is the name of the component (whatever you like) and the value is the same configuration as this one.
+
+**Example**:
+
+```json
+{
+	"external-components": {
+		"normalize.css": {
+			"component-path": "node_modules/normalize.css/"
+		}
+	}
+}
+```
+
+
+
+### `base`
+
+Allows to define some components as a base for all the others. This is typically a CSS framework or reset.
+
+**Default**: _none_
+
+An object containing a `css` and `js` keys. The value is an array of component names.
+
+The components must be defined via `components-path` or `external-components`
+
+**Example**:
+
+```json
+{
+	"base":{
+		"css": [
+			"normalize.css"
+		]
+	}
+}
+// note: only CSS is supported at the moment
+```
+
