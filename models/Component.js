@@ -21,6 +21,7 @@ function Component(options){
 	this.cache = {};
 	this.partialRegistered = false;
 	this.missingPartial = false;
+	this.baseDependencies = [];
 
 }
 Component.prototype = Object.create(ComponentBase.prototype);
@@ -68,7 +69,7 @@ Component.prototype.resolveDependencies = function(callback) {
 		}
 	}
 
-	this.dependencies = dependencies;
+	this.dependencies = this.baseDependencies.concat(dependencies);
 
 	if(this.dependencies.length > 0){
 		this.dsf.whenLoaded(this.dependencies, this.addDependencies.bind(this, callback));
@@ -171,10 +172,10 @@ Component.prototype.cacheConfig = function(callback) {
 };
 
 Component.prototype.buildStandaloneCss = function(callback) {
-	var baseCss = this.dsf.getBaseCss(),
+	var baseCss = this.dsf.getBaseCss(), ///@TOO components defined as base should not get this
 		componentCss = this.getCss(),
 		dependecyCss = this.cache.cssDependencies || '';
-		css = baseCss + componentCss + dependecyCss;
+		css = baseCss + componentCss + dependecyCss; // dependencies after component so user can't override dependencies
 
 	fs.writeFile(this.standaloneCssPath, css, callback);
 };
