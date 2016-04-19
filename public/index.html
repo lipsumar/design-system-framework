@@ -110,6 +110,7 @@
 
 
 	function renderComponentsList(components){
+		console.log(components);
 		var html = '<div class="group"><div class="group__title">Components</div>';
 		components.forEach(function(component){
 			html+='<div class="item" data-component="'+component.id+'">'+component.id+'</div>';

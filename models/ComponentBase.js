@@ -2,6 +2,7 @@ var pathUtils = require('../lib/utils/path.js'),
 	path = require('path');
 
 function ComponentBase(options){
+	this.options = options || {};
 	this.dsf = options.dsf;
 	this.path = options.path;
 	this.absPath = pathUtils.absolute(this.path);

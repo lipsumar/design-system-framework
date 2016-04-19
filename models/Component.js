@@ -171,7 +171,7 @@ Component.prototype.cacheConfig = function(callback) {
 };
 
 Component.prototype.buildStandaloneCss = function(callback) {
-	var baseCss = 'body{margin:0;font-family:sans-serif}',//dsf.getBaseCss();
+	var baseCss = this.dsf.getBaseCss(),
 		componentCss = this.getCss(),
 		dependecyCss = this.cache.cssDependencies || '';
 		css = baseCss + componentCss + dependecyCss;
