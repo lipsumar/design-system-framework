@@ -1,4 +1,5 @@
 var ComponentBase = require('./ComponentBase.js'),
+	_ = require('lodash'),
 	pathUtils = require('../lib/utils/path.js'),
 	path = require('path'),
 	mkdirp = require('mkdirp'),
@@ -23,13 +24,17 @@ function Component(options){
 	this.missingPartial = false;
 	this.baseDependencies = [];
 
+
+
 }
 Component.prototype = Object.create(ComponentBase.prototype);
 
 
 Component.prototype.build = function(callback) {
 	async.series([
-		// cache stuff
+		// override config with the component's own config.json
+		this.addLocalConfig.bind(this),
+
 		this.cacheResourcePathes.bind(this),
 		this.cacheResources.bind(this),
 
@@ -52,6 +57,20 @@ Component.prototype.build = function(callback) {
 
 Component.prototype.rebuild = function(callback) {
 	this.build(callback);
+};
+
+Component.prototype.addLocalConfig = function(callback) {
+
+	var self = this;
+	this.getResourcePaths('config', function(err, paths){
+		if(paths.length===1){
+			var localConfig = require(paths[0]);
+			_.merge(self.config, localConfig);
+		}
+		callback();
+	});
+
+
 };
 
 Component.prototype.resolveDependencies = function(callback) {
@@ -107,11 +126,9 @@ Component.prototype.registerPartial = function(callback) {
 
 Component.prototype.cacheResourcePathes = function(callback) {
 	var self = this;
-	async.map(['css','html','config'], this.getResourcePaths.bind(this), function(err, paths){
-
+	async.map(['css','html'], this.getResourcePaths.bind(this), function(err, paths){
 		self.resourcePaths.css = paths[0];
 		self.resourcePaths.html = paths[1][0];// there can be only one template
-		self.resourcePaths.config = paths[2][0];// there can be only one config
 
 		callback();
 	});
@@ -119,7 +136,6 @@ Component.prototype.cacheResourcePathes = function(callback) {
 Component.prototype.getResourcePaths = function(type, callback) {
 	glob(this.getGlobPath(type), function(err, files){
 		if(err) throw err;
-
 		callback(null, files);
 	});
 };
@@ -127,16 +143,17 @@ Component.prototype.getResourcePaths = function(type, callback) {
 Component.prototype.cacheResources = function(callback) {
 	async.parallel([
 		this.cacheCss.bind(this),
-		this.cacheHtml.bind(this),
-		this.cacheConfig.bind(this)
+		this.cacheHtml.bind(this)
 	], callback);
 
 };
 
 Component.prototype.cacheCss = function(cacheCssCallback) {
 	var self = this;
+
 	async.map(this.resourcePaths.css, fs.readFile, function(err, files){
 		if(err) throw err;
+
 		async.reduce(files, '', function(memo, item, callback){
 			callback(null, memo + '\n' + item.toString());
 		}, function(err, css){
@@ -166,25 +183,35 @@ Component.prototype.cacheHtml = function(callback) {
 
 };
 
-Component.prototype.cacheConfig = function(callback) {
-	if(this.resourcePaths.config){
-		try{
-			this.cache.config = require(path.join(this.absPath, this.resourcePaths.config));
-		}catch(err){
-			this.cache.config = {};
-		}
-
-	}
-	callback();
-};
 
 Component.prototype.buildStandaloneCss = function(callback) {
-	var baseCss = this.isBaseCss ? '' : this.dsf.getBaseCss(),
+	var self = this,
+		baseCss = this.isBaseCss ? '' : this.dsf.getBaseCss(),
 		componentCss = this.getCss(),
 		dependecyCss = this.cache.cssDependencies || '';
 		css = baseCss + componentCss + dependecyCss; // dependencies after component so user can't override dependencies
 
-	fs.writeFile(this.standaloneCssPath, css, callback);
+	this.preprocessCss(css, function(err, css){
+		if(err) throw err;
+		fs.writeFile(self.standaloneCssPath, css, callback);
+	});
+
+
+};
+
+Component.prototype.preprocessCss = function(css, callback) {
+	var self = this;
+	if(this.config.preprocessor && this.config.preprocessor.css){
+		var preprocessor = this.dsf.getPreprocessor(this.config.preprocessor.css);
+		preprocessor.process(css, this.path, function(err, out){
+			if(err){
+				console.log('['+self.id+'] PREPROCESSOR ERROR:\n  '+err);
+			}
+			callback(null, out);
+		});
+	}else{
+		callback(null, css);
+	}
 };
 
 Component.prototype.getCss = function(withDependencies) {
