@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/lipsumar/design-system-framework#readme",
   "dependencies": {
+    "async": "^2.0.0-rc.3",
     "express": "^4.13.4",
     "glob": "^7.0.3",
     "handlebars": "^4.0.5",
