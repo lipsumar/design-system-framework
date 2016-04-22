@@ -26,20 +26,20 @@ The only requirement is that you use one folder per component, the rest is up to
 
 ```json
 {
-	"css": "*.css",
-	"html": "*.hbs",
-	"config": "config.json"
+  "css": "*.css",
+  "html": "*.hbs",
+  "config": "config.json"
 }
 ```
 
 #### No hard coded values
 
-The sources you work on in DSF is the code you are going to use in the application code (html, css, js). As such, templates already use variables:
+The sources you work on in DSF is the code you are going to use in the application code (HTML, CSS, JS). As such, templates already use variables:
 
 ```handlebars
 <div class="textfield">
-	{{> Atom/Label id=id text=label}}
-	<input type="text" id="{{id}}" class="textfield__field">
+  {{> Atom/Label id=id text=label}}
+  <input type="text" id="{{id}}" class="textfield__field">
 </div>
 ```
 
@@ -51,7 +51,7 @@ Handlebars is used for templating.
 
 DFS does more than generate a styleguide from your sources: it actively watches you work and rebuilds anything that needs to. You should never have to touch your browser again.
 
-For each component DFS provides always-up-to-date HTML, CSS and JS files. These files are "standalone": they contain your base code (reset.css, your favorite CSS/JS framework) and the component's code. This way you can test faster with lighter setup and _cherry on the cake_: make sure your compnents do not depend on each other (tight-coupling).
+For each component DFS provides always-up-to-date HTML, CSS and JS files. These files are "standalone": they contain your base code (reset.css, your favorite CSS/JS framework) and the component's code. This way you can test faster with lighter setup and _cherry on the cake_: make sure your components do not depend on each other (tight-coupling).
 
 #### Dependency management
 
@@ -59,7 +59,7 @@ DFS understands your component dependencies and will always build what you need,
 
 #### Build production code
 
-Provided a small configuration, DFS can generate the smallest files possible for production. Since it enforces the separation of components, it can easily generate 2 version of external assets: the critical path (to be inlined) and the rest (to be loaded asynchronously).
+Provided a small configuration, DFS can generate the smallest files possible for production. Since it enforces the separation of components, it can easily generate 2 versions of external assets: the critical path (to be inlined) and the rest (to be loaded asynchronously).
 
 
 **Also:**
@@ -79,11 +79,11 @@ Provided a small configuration, DFS can generate the smallest files possible for
 
 #### Up to date documentation
 
-An up-to-date documentation of the design system is an invaluable assets for designers and editors. By using the styleguide sources as the project sources, it's simply impossible for the styleguide to be out of date.
+An up-to-date documentation of the design system is an invaluable asset for designers and editors. By using the styleguide sources as the project sources, it's simply impossible for the styleguide to be out of date.
 
 #### Quickly test copy
 
-A living styleguide allows you to test the limits of components: _does this title fit in our homepage ?_ You can simply test your copy in an actual browser, using the actual production code with no programming knowledge needed.
+A living styleguide allows you to test the limits of components: _does this title fit in our homepage?_ You can simply test your copy in an actual browser, using the actual production code with no programming knowledge needed.
 
 
 
@@ -133,7 +133,7 @@ The path to a directory containing your components.
 
 ```json
 {
-	"components-path": "src/components"
+  "components-path": "src/components"
 }
 ```
 
@@ -147,7 +147,7 @@ The path to a directory containing **a single** component.
 
 ```json
 {
-	"component-path": "node_modules/normalize.css/"
+  "component-path": "node_modules/normalize.css/"
 }
 ```
 
@@ -164,11 +164,11 @@ The key is the name of the component (whatever you like) and the value is the sa
 
 ```json
 {
-	"external-components": {
-		"normalize.css": {
-			"component-path": "node_modules/normalize.css/"
-		}
-	}
+  "external-components": {
+    "normalize.css": {
+      "component-path": "node_modules/normalize.css/"
+    }
+  }
 }
 ```
 
@@ -188,11 +188,11 @@ The components must be defined via `components-path` or `external-components`
 
 ```json
 {
-	"base":{
-		"css": [
-			"normalize.css"
-		]
-	}
+  "base":{
+    "css": [
+      "normalize.css"
+    ]
+  }
 }
 // note: only CSS is supported at the moment
 ```
