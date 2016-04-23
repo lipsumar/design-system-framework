@@ -1,5 +1,7 @@
 # Design System Framework
 
+[![Join the chat at https://gitter.im/lipsumar/design-system-framework](https://badges.gitter.im/lipsumar/design-system-framework.svg)](https://gitter.im/lipsumar/design-system-framework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Build living styleguides and make sure they stay up to date.
 
 ![Design System Framework UI](resources/documentation/dsf-ui.png)
