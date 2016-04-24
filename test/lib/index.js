@@ -1,3 +1,3 @@
 module.exports = function(dsf){
-	require('./dsf-spec.js')(dsf);
+    require('./dsf-spec.js')(dsf);
 }

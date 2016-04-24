@@ -1,8 +1,8 @@
 {
-	"components-path": "test/test-components",
-	"base":{
-		"css":[
-			"Base"
-		]
-	}
+    "components-path": "test/test-components",
+    "base":{
+        "css":[
+            "Base"
+        ]
+    }
 }
