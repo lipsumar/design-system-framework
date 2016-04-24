@@ -41,4 +41,13 @@ describe('dsf object', function () {
 		});
 	});
 
+	describe('#getComponent', function () {
+		it('should return component', function (done) {
+			this.subject.getComponent('Base', function(component){
+				expect(component.id).to.equal('Base');
+				done();
+			});
+		});
+	});
+
 });
