@@ -92,7 +92,48 @@ describe('Component', function () {
 			expect(this.subject.cache.cssDependencies.trim()).to.equal('/* dependency: The/Dependency */\n\n.the-dependency{}');
 		});
 
+	});
 
+	describe('#preprocessCss', function () {
+		describe('given no preprocessor', function () {
+			it('should not modify css', function (done) {
+				var inCss = '.the-css{}';
+				this.subject.preprocessCss(inCss, function(err, outCss){
+					expect(err).to.be.falsy;
+					expect(outCss).to.equal(inCss);
+					done();
+				});
+			});
+		});
+		describe('given a preprocessor', function () {
+			it('should modify css', function (done) {
+
+				// shortcut dsf.getPreprocessor
+				var getPreprocessor = dsf.getPreprocessor;
+				dsf.getPreprocessor = function(){
+					return {
+						process: function(css, basePath, cb){
+							cb(null, '/*preprocessed('+basePath+')*/' + css);
+						}
+					};
+				};
+				this.subject.config = {
+					preprocessor:{
+						css: 'harry potter'
+					}
+				};
+				var inCss = '.the-css{}';
+				this.subject.preprocessCss(inCss, function(err, outCss){
+					expect(err).to.be.falsy;
+					expect(outCss).to.equal('/*preprocessed(test/test-components/Base)*/' + inCss);
+
+					// remove shortcut
+					dsf.getPreprocessor = getPreprocessor;
+
+					done();
+				});
+			});
+		});
 	});
 
 
