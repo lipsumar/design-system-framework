@@ -1,5 +1,6 @@
 # Design System Framework
 
+[![Build status: https://travis-ci.org/lipsumar/design-system-framework](https://api.travis-ci.org/lipsumar/design-system-framework.svg?branch=master)](https://travis-ci.org/lipsumar/design-system-framework)
 [![Join the chat at https://gitter.im/lipsumar/design-system-framework](https://badges.gitter.im/lipsumar/design-system-framework.svg)](https://gitter.im/lipsumar/design-system-framework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Build living styleguides and make sure they stay up to date.
