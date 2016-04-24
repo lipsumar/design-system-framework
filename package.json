@@ -1,6 +1,6 @@
 {
   "name": "design-system-framework",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A simple framework to create living design systems",
   "main": "lib/dsf.js",
   "scripts": {
@@ -24,6 +24,7 @@
   "homepage": "https://github.com/lipsumar/design-system-framework#readme",
   "dependencies": {
     "chai": "^3.5.0",
+    "async": "^2.0.0-rc.3",
     "express": "^4.13.4",
     "glob": "^7.0.3",
     "handlebars": "^4.0.5",
