@@ -1,8 +1,17 @@
-var expect = require('chai').expect;
+/*jshint -W030 */
+
+var expect = require('chai').expect,
+	_ = require('lodash');
+
+// load config on file to compare later
+var DEFAULT_OPTIONS = require('../options.json');
+var USER_OPTIONS = require('./test-options.json');
 
 describe('dsf object', function () {
 	before(function () {
 		this.subject = require('..');
+		this.subject.init('test/test-options.json');
+		this.subject.start();
 	});
 
 	it('should exist', function () {
@@ -16,11 +25,19 @@ describe('dsf object', function () {
 	});
 
 	describe('#getOptions', function () {
-		before(function () {
-			this.optionsOnFile = require('../options.json');
-		});
 		it('should return config', function () {
-			expect(this.subject.getOptions()).to.deep.equal(this.optionsOnFile);
+			var mergedOptions = _.merge({}, DEFAULT_OPTIONS, USER_OPTIONS);
+			expect(this.subject.getOptions()).to.deep.equal(mergedOptions);
+		});
+	});
+
+	describe('#getBaseCss', function () {
+		it('should return the base CSS', function (done) {
+			this.subject.getBaseCss(function(css){
+				expect(css.trim()).to.equal('body{padding:0;margin:0}');
+				done();
+			});
+
 		});
 	});
 

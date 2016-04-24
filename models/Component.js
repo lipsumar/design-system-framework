@@ -186,16 +186,24 @@ Component.prototype.cacheHtml = function(callback) {
 
 Component.prototype.buildStandaloneCss = function(callback) {
 	var self = this,
-		baseCss = this.isBaseCss ? '' : this.dsf.getBaseCss(),
 		componentCss = this.getCss(),
-		dependecyCss = this.cache.cssDependencies || '';
-		css = baseCss + componentCss + dependecyCss; // dependencies after component so user can't override dependencies
+		dependecyCss = this.cache.cssDependencies || '',
+		allCss = componentCss + dependecyCss; // dependencies after component so user can't override dependencies
 
-	this.preprocessCss(css, function(err, css){
-		if(err) throw err;
-		fs.writeFile(self.standaloneCssPath, css, callback);
-	});
+	if(!this.isBaseCss){
+		this.dsf.getBaseCss(function(baseCss){
+			finish(baseCss + allCss);
+		});
+	}else{
+		finish(allCss);
+	}
 
+	function finish(css){
+		self.preprocessCss(css, function(err, css){
+			if(err) throw err;
+			fs.writeFile(self.standaloneCssPath, css, callback);
+		});
+	}
 
 };
 
