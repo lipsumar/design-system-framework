@@ -10,7 +10,11 @@ var ComponentBase = require('./ComponentBase.js'),
 
 //var partialsRegex = /\{\{> ?([a-zA-Z\/\-_]+)/gm;
 
-
+/**
+ * A directory containing HTML,CSS,JS
+ * @param {object} options
+ *        * id {string} unique identifier
+ */
 function Component(options){
 	ComponentBase.call(this, options);
 
@@ -64,10 +68,20 @@ Component.prototype.addLocalConfig = function(callback) {
 	var self = this;
 	this.getResourcePaths('config', function(err, paths){
 		if(paths.length===1){
-			var localConfig = require(paths[0]);
-			_.merge(self.config, localConfig);
+				self.dsf.util.file.readJSON(paths[0], function(err, localConfig){
+				if(err){
+					console.log('WARNING: '+err);
+					callback();// fail silently
+					return;
+				}
+				_.merge(self.config, localConfig);
+				callback();
+			});
+		}else{
+			// no local config
+			callback();
 		}
-		callback();
+
 	});
 
 
@@ -133,6 +147,13 @@ Component.prototype.cacheResourcePathes = function(callback) {
 		callback();
 	});
 };
+
+/**
+ * Returns all existing files for the given resource type
+ * @param  {string}   type     the type of resource (html, css, js, config)
+ * @param  {Function} callback
+ * @return {void}
+ */
 Component.prototype.getResourcePaths = function(type, callback) {
 	glob(this.getGlobPath(type), function(err, files){
 		if(err) throw err;

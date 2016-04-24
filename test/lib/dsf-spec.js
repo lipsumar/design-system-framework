@@ -4,12 +4,12 @@ var expect = require('chai').expect,
 	_ = require('lodash');
 
 // load config on file to compare later
-var DEFAULT_OPTIONS = require('../options.json');
-var USER_OPTIONS = require('./test-options.json');
+var DEFAULT_OPTIONS = require('../../options.json');
+var USER_OPTIONS = require('../test-options.json');
 
 describe('dsf object', function () {
 	before(function () {
-		this.subject = require('..');
+		this.subject = require('../..');
 		this.subject.init('test/test-options.json');
 		this.subject.start();
 	});
