@@ -1,2 +1,4 @@
-require('./ComponentCandidate-spec.js');
-require('./Component-spec.js');
+module.exports = function(dsf){
+	require('./ComponentCandidate-spec.js')(dsf);
+	require('./Component-spec.js')(dsf);
+};

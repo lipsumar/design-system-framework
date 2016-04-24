@@ -13,7 +13,7 @@ function ComponentBase(options){
 	this.dsf = options.dsf;
 	this.path = options.path;
 	this.absPath = pathUtils.absolute(this.path);
-	this.config = _.merge({}, this.dsf.getOptions(), options.config);
+	this.config = _.merge({}, this.dsf.getConfig(), options.config);
 }
 
 

@@ -35,6 +35,7 @@ Component.prototype = Object.create(ComponentBase.prototype);
 
 
 Component.prototype.build = function(callback) {
+	var self = this;
 	async.series([
 		// override config with the component's own config.json
 		this.addLocalConfig.bind(this),
@@ -54,6 +55,11 @@ Component.prototype.build = function(callback) {
 
 		// register handlebars partial
 		this.registerPartial.bind(this),
+
+		function(cb){
+			self.loaded = true;
+			cb();
+		}
 
 	], callback);
 
