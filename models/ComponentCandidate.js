@@ -14,6 +14,8 @@ ComponentCandidate.prototype.resolve = function(callback) {
 	async.map(['css','html'], this.hasResource.bind(this), function(err, results){
 		if(results[0] || results[1]){
 			self.isComponent = true;
+		}else{
+			self.isComponent = false;
 		}
 		callback(self);
 	});

@@ -10,7 +10,11 @@ var ComponentBase = require('./ComponentBase.js'),
 
 //var partialsRegex = /\{\{> ?([a-zA-Z\/\-_]+)/gm;
 
-
+/**
+ * A directory containing HTML,CSS,JS
+ * @param {object} options
+ *        * id {string} unique identifier
+ */
 function Component(options){
 	ComponentBase.call(this, options);
 
@@ -64,10 +68,20 @@ Component.prototype.addLocalConfig = function(callback) {
 	var self = this;
 	this.getResourcePaths('config', function(err, paths){
 		if(paths.length===1){
-			var localConfig = require(paths[0]);
-			_.merge(self.config, localConfig);
+				self.dsf.util.file.readJSON(paths[0], function(err, localConfig){
+				if(err){
+					console.log('WARNING: '+err);
+					callback();// fail silently
+					return;
+				}
+				_.merge(self.config, localConfig);
+				callback();
+			});
+		}else{
+			// no local config
+			callback();
 		}
-		callback();
+
 	});
 
 
@@ -96,14 +110,14 @@ Component.prototype.resolveDependencies = function(callback) {
 
 
 	if(this.dependencies.length > 0){
-		this.dsf.whenLoaded(this.dependencies, this.addDependencies.bind(this, callback));
+		this.dsf.whenLoaded(this.dependencies, this.cacheDependencies.bind(this, callback));
 	}else{
 		callback();
 	}
 
 };
 
-Component.prototype.addDependencies = function(callback) {
+Component.prototype.cacheDependencies = function(callback) {
 	var dependecyCss = '';
 	this.dependencies.forEach(function(dependencyId){
 		var dependency = this.dsf.getComponent(dependencyId);
@@ -133,6 +147,13 @@ Component.prototype.cacheResourcePathes = function(callback) {
 		callback();
 	});
 };
+
+/**
+ * Returns all existing files for the given resource type
+ * @param  {string}   type     the type of resource (html, css, js, config)
+ * @param  {Function} callback
+ * @return {void}
+ */
 Component.prototype.getResourcePaths = function(type, callback) {
 	glob(this.getGlobPath(type), function(err, files){
 		if(err) throw err;
@@ -186,16 +207,22 @@ Component.prototype.cacheHtml = function(callback) {
 
 Component.prototype.buildStandaloneCss = function(callback) {
 	var self = this,
-		baseCss = this.isBaseCss ? '' : this.dsf.getBaseCss(),
-		componentCss = this.getCss(),
-		dependecyCss = this.cache.cssDependencies || '';
-		css = baseCss + componentCss + dependecyCss; // dependencies after component so user can't override dependencies
+		css = this.getCss(true);
 
-	this.preprocessCss(css, function(err, css){
-		if(err) throw err;
-		fs.writeFile(self.standaloneCssPath, css, callback);
-	});
+	if(!this.isBaseCss){
+		this.dsf.getBaseCss(function(baseCss){
+			finish(baseCss + css);
+		});
+	}else{
+		finish(css);
+	}
 
+	function finish(css){
+		self.preprocessCss(css, function(err, css){
+			if(err) throw err;
+			fs.writeFile(self.standaloneCssPath, css, callback);
+		});
+	}
 
 };
 
@@ -215,6 +242,7 @@ Component.prototype.preprocessCss = function(css, callback) {
 };
 
 Component.prototype.getCss = function(withDependencies) {
+	// dependencies CSS after component CSS so user can't override dependencies
 	return this.cache.css + ((withDependencies && this.cache.cssDependencies) ? this.cache.cssDependencies : '');
 };
 

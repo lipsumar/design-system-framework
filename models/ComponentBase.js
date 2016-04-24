@@ -2,6 +2,12 @@ var pathUtils = require('../lib/utils/path.js'),
 	path = require('path'),
 	_ = require('lodash');
 
+/**
+ * Base for component objects
+ * @param {object} options
+ *        * dsf  {DSF object}
+ *        * path {string}     relative path (from process.cwd) to component directory
+ */
 function ComponentBase(options){
 	this.options = options || {};
 	this.dsf = options.dsf;
