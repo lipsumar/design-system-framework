@@ -110,14 +110,14 @@ Component.prototype.resolveDependencies = function(callback) {
 
 
 	if(this.dependencies.length > 0){
-		this.dsf.whenLoaded(this.dependencies, this.addDependencies.bind(this, callback));
+		this.dsf.whenLoaded(this.dependencies, this.cacheDependencies.bind(this, callback));
 	}else{
 		callback();
 	}
 
 };
 
-Component.prototype.addDependencies = function(callback) {
+Component.prototype.cacheDependencies = function(callback) {
 	var dependecyCss = '';
 	this.dependencies.forEach(function(dependencyId){
 		var dependency = this.dsf.getComponent(dependencyId);
@@ -207,16 +207,14 @@ Component.prototype.cacheHtml = function(callback) {
 
 Component.prototype.buildStandaloneCss = function(callback) {
 	var self = this,
-		componentCss = this.getCss(),
-		dependecyCss = this.cache.cssDependencies || '',
-		allCss = componentCss + dependecyCss; // dependencies after component so user can't override dependencies
+		css = this.getCss(true);
 
 	if(!this.isBaseCss){
 		this.dsf.getBaseCss(function(baseCss){
-			finish(baseCss + allCss);
+			finish(baseCss + css);
 		});
 	}else{
-		finish(allCss);
+		finish(css);
 	}
 
 	function finish(css){
@@ -244,6 +242,7 @@ Component.prototype.preprocessCss = function(css, callback) {
 };
 
 Component.prototype.getCss = function(withDependencies) {
+	// dependencies CSS after component CSS so user can't override dependencies
 	return this.cache.css + ((withDependencies && this.cache.cssDependencies) ? this.cache.cssDependencies : '');
 };
 
