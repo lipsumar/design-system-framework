@@ -25,7 +25,7 @@ PreviewDocument.prototype.render = function() {
 
     return pageTemplate({
         component: this.components[0],
-        html: this.components[0].render(),
+        html: this.components[0].renderHtml(),
         cacheBust: (new Date()).getTime()
     });
 };

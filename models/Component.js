@@ -19,9 +19,6 @@ function Component(options){
     ComponentBase.call(this, options);
 
     this.id = options.id;
-    this.buildPath = path.join(__dirname, '../public/_built/' + this.id);///@TODO find something more elegant than path.join(__dirname, ) to reference preoject files
-    this.standaloneCssPath = path.join(this.buildPath + '/standalone.css');
-    this.standaloneCssPublicPath = '/_built/' + this.id + '/standalone.css';
     this.resourcePaths = {};
     this.cache = {};
     this.partialRegistered = false;
@@ -43,15 +40,8 @@ Component.prototype.build = function(callback) {
         this.cacheResourcePathes.bind(this),
         this.cacheResources.bind(this),
 
-        mkdirp.bind(null, this.buildPath),
-
         // dependencies
         this.resolveDependencies.bind(this),
-
-        // build static stuff
-
-        this.buildStandaloneCss.bind(this),
-
 
         // register handlebars partial
         this.registerPartial.bind(this),
@@ -211,26 +201,6 @@ Component.prototype.cacheHtml = function(callback) {
 };
 
 
-Component.prototype.buildStandaloneCss = function(callback) {
-    var self = this,
-        css = this.getCss(true);
-
-    if(!this.isBaseCss){
-        this.dsf.getBaseCss(function(baseCss){
-            finish(baseCss + css);
-        });
-    }else{
-        finish(css);
-    }
-
-    function finish(css){
-        self.preprocessCss(css, function(err, css){
-            if(err) throw err;
-            fs.writeFile(self.standaloneCssPath, css, callback);
-        });
-    }
-
-};
 
 Component.prototype.preprocessCss = function(css, callback) {
     var self = this;
@@ -252,13 +222,29 @@ Component.prototype.getCss = function(withDependencies) {
     return this.cache.css + ((withDependencies && this.cache.cssDependencies) ? this.cache.cssDependencies : '');
 };
 
-Component.prototype.render = function(context) {
+Component.prototype.renderHtml = function(context) {
     if(this.cache.tpl){
         return this.cache.tpl(context || (this.cache.config ? this.cache.config : {}));
     }
     return '';
 };
 
+Component.prototype.renderCss = function(callback) {
+    var self = this,
+        css = this.getCss(true);
+
+    if(!this.isBaseCss){
+        this.dsf.getBaseCss(function(baseCss){
+            finish(baseCss + css);
+        });
+    }else{
+        finish(css);
+    }
+
+    function finish(css){
+        self.preprocessCss(css, callback);
+    }
+};
 
 
 
