@@ -43,8 +43,8 @@ module.exports = function(dsf){
 
         describe('#getComponent (async)', function () {
             it('should return component', function (done) {
-                this.subject.getComponent('Base', function(component){
-                    expect(component.id).to.equal('Base');
+                this.subject.getComponent('Dumbledore', function(component){
+                    expect(component.id).to.equal('Dumbledore');
                     done();
                 });
             });
@@ -53,8 +53,8 @@ module.exports = function(dsf){
 
         describe('#getComponent (sync)', function () {
             it('should return component', function () {
-                var component = this.subject.getComponent('Base');
-                expect(component.id).to.equal('Base');
+                var component = this.subject.getComponent('Dumbledore');
+                expect(component.id).to.equal('Dumbledore');
             });
         });
 

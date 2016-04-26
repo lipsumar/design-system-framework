@@ -13,8 +13,8 @@ module.exports = function(dsf){
         before(function () {
             this.subject = new Component({
                 dsf: dsf,
-                path: 'test/test-components/Base',
-                id: 'Base'
+                path: 'test/test-components/Dumbledore',
+                id: 'Dumbledore'
             });
 
         });
@@ -44,10 +44,10 @@ module.exports = function(dsf){
             it('should cache HTML', function (done) {
                 var subject = this.subject;
                 subject.resourcePaths = {
-                    html: path.join(subject.absPath,'Base.html')
+                    html: path.join(subject.absPath,'main.html')
                 };
                 this.subject.cacheHtml(function(){
-                    expect(subject.cache.html.trim()).to.equal('<p>This is the HTML content of Base</p>');
+                    expect(subject.cache.html.trim()).to.equal('<p>Use the force, Harry</p>');
                     done();
                 });
             });
@@ -57,7 +57,7 @@ module.exports = function(dsf){
             it('should cache CSS', function (done) {
                 var subject = this.subject;
                 subject.resourcePaths = {
-                    css: [path.join(subject.absPath,'Base.css')]
+                    css: [path.join(subject.absPath,'style.css')]
                 };
                 this.subject.cacheCss(function(){
                     expect(subject.cache.css.trim()).to.equal('body{padding:0;margin:0}');
@@ -127,7 +127,7 @@ module.exports = function(dsf){
                     var inCss = '.the-css{}';
                     this.subject.preprocessCss(inCss, function(err, outCss){
                         expect(err).to.be.falsy;
-                        expect(outCss).to.equal('/*preprocessed(test/test-components/Base)*/' + inCss);
+                        expect(outCss).to.equal('/*preprocessed(test/test-components/Dumbledore)*/' + inCss);
 
                         // remove shortcut
                         dsf.getPreprocessor = getPreprocessor;
