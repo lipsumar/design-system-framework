@@ -8,7 +8,8 @@ var ComponentBase = require('./ComponentBase.js'),
     glob = require('glob'),
     gfile = require('gulp-file'),
     gulp = require('gulp'),
-    through2 =  require('through2');
+    through2 =  require('through2'),
+    runSequence = require('run-sequence');
 
 
 //var partialsRegex = /\{\{> ?([a-zA-Z\/\-_]+)/gm;
@@ -239,26 +240,30 @@ Component.prototype.process = function(type, str, callback) {
     if(this.config.process && this.config.process[type]){
         var plugins = this.config.process[type];
         console.log('file', this.id + '.' + type);
-        var stream = gfile(this.id + '.' + type, str, {src:true});
 
-        plugins.forEach(function(module){
-            //@TODO pass config to plugins
-            stream.pipe(require(module)());
+        gulp.task(this.id + '.' + type, function(){
+            console.log('task start');
+            var dest = self.getDestPath(type);
+
+            return gfile(self.id + '.' + type, str, {src:true})
+            //return gulp.src('Components/'+self.id+'/*.less')
+            .pipe(require('gulp-less')())
+            .pipe(require('gulp-clean-css')())
+            .pipe(gulp.dest(dest))
+            .pipe(through2.obj(function(file,enc,cb){
+                callback(null, file.contents.toString());
+                cb();
+            }));
+            /*plugins.forEach(function(module){
+                //@TODO pass config to plugins
+                console.log('pipe', module);
+                stream.pipe(require(module)());
+            });*/
+
         });
 
-        stream.pipe(gulp.dest(this.getDestPath(type)));
-
-        stream.pipe(through2.obj(function(file){
-            callback(null, file.contents.toString());
-        }));
-
-
-
-       /* stream.on('end', function(){
-            console.log('red', self.getDestPath(type)+self.id + '.' + type);
-            var strOut = fs.readFileSync(self.getDestPath(type)+self.id + '.' + type);
-            callback(null, strOut);
-        });*/
+        //gulp.start([this.id + '.' + type]);
+        runSequence([this.id + '.' + type]);
 
     }else{
         callback(null, str);
@@ -266,7 +271,7 @@ Component.prototype.process = function(type, str, callback) {
 };
 
 Component.prototype.getDestPath = function(type) {
-    return path.join(__dirname, '../public/_built/');
+    return path.join(__dirname, '../public/_built/'+this.id+'/');
 };
 
 
