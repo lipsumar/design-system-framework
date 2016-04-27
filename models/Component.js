@@ -239,38 +239,44 @@ Component.prototype.process = function(type, str, callback) {
     var self = this;
     if(this.config.process && this.config.process[type]){
         var plugins = this.config.process[type];
-        console.log('file', this.id + '.' + type);
 
-        gulp.task(this.id + '.' + type, function(){
-            console.log('task start');
-            var dest = self.getDestPath(type);
+        var next = function(i){
+            if(plugins[i]){
+                gulpTask(self.id + '_' + plugins[i], str, require(plugins[i]), self.getDestPath(), function(err, out){
+                    str = out;
+                    next(i+1);
+                });
 
-            return gfile(self.id + '.' + type, str, {src:true})
-            //return gulp.src('Components/'+self.id+'/*.less')
-            .pipe(require('gulp-less')())
-            .pipe(require('gulp-clean-css')())
-            .pipe(gulp.dest(dest))
-            .pipe(through2.obj(function(file,enc,cb){
-                callback(null, file.contents.toString());
-                cb();
-            }));
-            /*plugins.forEach(function(module){
-                //@TODO pass config to plugins
-                console.log('pipe', module);
-                stream.pipe(require(module)());
-            });*/
+            }else{
+                callback(str);
+            }
 
-        });
-
-        //gulp.start([this.id + '.' + type]);
-        runSequence([this.id + '.' + type]);
+        };
+        next(0);
 
     }else{
         callback(null, str);
     }
 };
 
-Component.prototype.getDestPath = function(type) {
+function gulpTask(taskName, str, module, dest, callback){
+    gulp.task(taskName, function(){
+        console.log('task "'+taskName+'" start');
+
+        return gfile(taskName, str, {src:true})
+            .pipe(module())
+            .pipe(gulp.dest(dest))
+            .pipe(through2.obj(function(file,enc,cb){
+                callback(null, file.contents.toString());
+                cb();
+            }));
+    });
+
+    //gulp.start([this.id + '.' + type]);
+    runSequence([taskName]);
+}
+
+Component.prototype.getDestPath = function() {
     return path.join(__dirname, '../public/_built/'+this.id+'/');
 };
 
