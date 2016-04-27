@@ -5,7 +5,10 @@ var ComponentBase = require('./ComponentBase.js'),
     mkdirp = require('mkdirp'),
     fs = require('fs'),
     async = require('async'),
-    glob = require('glob');
+    glob = require('glob'),
+    gfile = require('gulp-file'),
+    gulp = require('gulp'),
+    through2 =  require('through2');
 
 
 //var partialsRegex = /\{\{> ?([a-zA-Z\/\-_]+)/gm;
@@ -37,8 +40,8 @@ Component.prototype.build = function(callback) {
         // override config with the component's own config.json
         this.addLocalConfig.bind(this),
 
-        this.cacheResourcePathes.bind(this),
-        this.cacheResources.bind(this),
+        this.cacheHtml.bind(this),
+        this.cacheCss.bind(this),
 
         // dependencies
         this.resolveDependencies.bind(this),
@@ -134,15 +137,7 @@ Component.prototype.registerPartial = function(callback) {
     callback();
 };
 
-Component.prototype.cacheResourcePathes = function(callback) {
-    var self = this;
-    async.map(['css','html'], this.getResourcePaths.bind(this), function(err, paths){
-        self.resourcePaths.css = paths[0];
-        self.resourcePaths.html = paths[1][0];// there can be only one template
 
-        callback();
-    });
-};
 
 /**
  * Returns all existing files for the given resource type
@@ -157,71 +152,65 @@ Component.prototype.getResourcePaths = function(type, callback) {
     });
 };
 
-Component.prototype.cacheResources = function(callback) {
-    async.parallel([
-        this.cacheCss.bind(this),
-        this.cacheHtml.bind(this)
-    ], callback);
 
-};
 
 Component.prototype.cacheCss = function(cacheCssCallback) {
     var self = this;
 
-    async.map(this.resourcePaths.css, fs.readFile, function(err, files){
-        if(err) throw err;
+    this.getResourcePaths('css',function(err, files){
+        if(files.length>0){
+            async.map(files, fs.readFile, function(err, files){
+                if(err) throw err;
 
-        async.reduce(files, '', function(memo, item, callback){
-            callback(null, memo + '\n' + item.toString());
-        }, function(err, css){
-            if(err) throw err;
-            self.cache.css = css;
+                async.reduce(files, '', function(memo, item, callback){
+                    callback(null, memo + '\n' + item.toString());
+                }, function(err, css){
+                    if(err) throw err;
+                    self.cache.css = css;
+                    cacheCssCallback();
+                });
+            });
+        }else{
             cacheCssCallback();
-        });
+        }
     });
+
+
 
 };
 
 
 Component.prototype.cacheHtml = function(callback) {
+
     var self = this;
 
-    if(this.resourcePaths.html){
-        fs.readFile(this.resourcePaths.html, function(err, file){
-            var html = file.toString();
-            self.cache.html = html;
-            self.cache.tpl = self.dsf.getHandlebars().compile(html);
+    this.getResourcePaths('html',function(err, files){
+        if(files.length>0){
+            //@TODO gulp is probably not needed here
+            var stream = gulp.src(self.getGlobPath('html'));
+            stream.pipe(through2.obj(function(file, enc, cb){
+
+                var html = file.contents.toString();
+                self.cache.html = html;
+                self.cache.tpl = self.dsf.getHandlebars().compile(html);
+                callback();
+
+            }));
+        }else{
             callback();
-        });
-    }else{
-        self.cache.html = '';
-        callback();
-    }
+        }
+    });
 
 };
 
 
-
-Component.prototype.preprocessCss = function(css, callback) {
-    var self = this;
-    if(this.config.preprocessor && this.config.preprocessor.css){
-        var preprocessor = this.dsf.getPreprocessor(this.config.preprocessor.css);
-        preprocessor.process(css, this.path, function(err, out){
-            if(err){
-                console.log('['+self.id+'] PREPROCESSOR ERROR:\n  '+err);
-            }
-            callback(null, out);
-        });
-    }else{
-        callback(null, css);
-    }
-};
-
+// without base css
 Component.prototype.getCss = function(withDependencies) {
     // dependencies CSS after component CSS so user can't override dependencies
     return this.cache.css + ((withDependencies && this.cache.cssDependencies) ? this.cache.cssDependencies : '');
 };
 
+///@TODO make renderHtml async to pass string through .process()
 Component.prototype.renderHtml = function(context) {
     if(this.cache.tpl){
         return this.cache.tpl(context || (this.cache.config ? this.cache.config : {}));
@@ -235,18 +224,50 @@ Component.prototype.renderCss = function(callback) {
 
     if(!this.isBaseCss){
         this.dsf.getBaseCss(function(baseCss){
-            finish(baseCss + css);
+            self.process('css', baseCss + css, callback);
         });
     }else{
-        finish(css);
+        self.process('css', css, callback);
     }
 
-    function finish(css){
-        self.preprocessCss(css, callback);
-    }
 };
 
 
+
+Component.prototype.process = function(type, str, callback) {
+    var self = this;
+    if(this.config.process && this.config.process[type]){
+        var plugins = this.config.process[type];
+        console.log('file', this.id + '.' + type);
+        var stream = gfile(this.id + '.' + type, str, {src:true});
+
+        plugins.forEach(function(module){
+            //@TODO pass config to plugins
+            stream.pipe(require(module)());
+        });
+
+        stream.pipe(gulp.dest(this.getDestPath(type)));
+
+        stream.pipe(through2.obj(function(file){
+            callback(null, file.contents.toString());
+        }));
+
+
+
+       /* stream.on('end', function(){
+            console.log('red', self.getDestPath(type)+self.id + '.' + type);
+            var strOut = fs.readFileSync(self.getDestPath(type)+self.id + '.' + type);
+            callback(null, strOut);
+        });*/
+
+    }else{
+        callback(null, str);
+    }
+};
+
+Component.prototype.getDestPath = function(type) {
+    return path.join(__dirname, '../public/_built/');
+};
 
 
 
