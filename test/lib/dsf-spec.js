@@ -39,6 +39,18 @@ module.exports = function(dsf){
                 });
 
             });
+
+            describe('with no base CSS configured', function () {
+                before(function () {
+                    this.subject.getConfig().base.css = null;
+                });
+                it('should return an empty string', function (done) {
+                    this.subject.getBaseCss(function(css){
+                        expect(css.trim()).to.equal('');
+                        done();
+                    });
+                });
+            });
         });
 
         describe('#getComponent (async)', function () {
