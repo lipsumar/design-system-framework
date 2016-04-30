@@ -9,7 +9,8 @@ var ComponentBase = require('./ComponentBase.js'),
     gfile = require('gulp-file'),
     gulp = require('gulp'),
     through2 =  require('through2'),
-    runSequence = require('run-sequence');
+    runSequence = require('run-sequence'),
+    chalk = require('chalk');
 
 
 //var partialsRegex = /\{\{> ?([a-zA-Z\/\-_]+)/gm;
@@ -61,7 +62,7 @@ Component.prototype.build = function(callback) {
 
 Component.prototype.rebuild = function(callback) {
     var self = this;
-    console.log('rebuilding... '+this.id);
+    this.log('rebuilding... '+this.id);
 
     this.build(function(){
         if(self.dependencyOf.length > 0){
@@ -71,7 +72,7 @@ Component.prototype.rebuild = function(callback) {
                     return;
                 }
                 var dependentComponent = self.dsf.getComponent(self.dependencyOf[i]);
-                console.log('-> rebuild '+dependentComponent.id+' because it depends on '+self.id);
+                self.log('-> rebuild '+dependentComponent.id+' because it depends on '+self.id);
                 dependentComponent.rebuild(next.bind(null, i+1));
             };
             next(0);
@@ -88,7 +89,7 @@ Component.prototype.addLocalConfig = function(callback) {
         if(paths.length===1){
                 self.dsf.util.file.readJSON(paths[0], function(err, localConfig){
                 if(err){
-                    console.log('WARNING: '+err);
+                    self.warning('WARNING: '+err);
                     callback();// fail silently
                     return;
                 }
@@ -297,8 +298,6 @@ Component.prototype.process = function(type, str, callback) {
 
 function gulpTask(taskName, str, module, dest, callback){
     gulp.task(taskName, function(){
-        console.log('task "'+taskName+'" start');
-
         return gfile(taskName, str, {src:true})
             .pipe(module())
             .pipe(gulp.dest(dest))
@@ -316,6 +315,17 @@ Component.prototype.getDestPath = function() {
     return path.join(__dirname, '../public/_built/'+this.id+'/');
 };
 
+function logId(){
+    return chalk.bgBlue(' '+this.id+' ');
+}
+Component.prototype.log = function(msg) {
+    msg = logId.call(this) + ' ' + msg;
+    this.dsf.log(msg);
+};
 
+Component.prototype.warning = function(msg) {
+    msg = logId.call(this) + ' ' + chalk.yellow(msg);
+    this.dsf.log(msg, true);
+};
 
 module.exports = Component;
