@@ -251,7 +251,11 @@ Component.prototype.getCss = function(withDependencies) {
 ///@TODO make renderHtml async to pass string through .process()
 Component.prototype.renderHtml = function(context) {
     if(this.cache.tpl){
-        return this.cache.tpl(context || (this.cache.config ? this.cache.config : {}));
+
+        if(!context && this.config.vars){
+            context = this.config.vars;
+        }
+        return this.cache.tpl(context || {});
     }
     return '';
 };
