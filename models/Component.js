@@ -248,7 +248,7 @@ Component.prototype.process = function(type, str, callback) {
                 });
 
             }else{
-                callback(str);
+                callback(null, str);
             }
 
         };

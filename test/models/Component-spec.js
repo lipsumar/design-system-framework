@@ -98,11 +98,14 @@ module.exports = function(dsf){
 
         describe('#renderCss', function () {
             describe('given no preprocessor', function () {
+                before(function () {
+                    this.subject.config.process = {};
+                    this.subject.cache.css = 'body{padding:0;margin:0}';
+                });
                 it('should not modify css', function (done) {
-                    this.subject.cache.css = '.the-css{}';
                     this.subject.renderCss(function(err, outCss){
                         expect(err).to.be.falsy;
-                        expect(outCss).to.equal('\nbody{padding:0;margin:0}\n.the-css{}\n\n/* dependency: The/Dependency */\n\n.the-dependency{}\n\n');
+                        expect(outCss).to.equal('body{padding:0;margin:0}\n\n/* dependency: The/Dependency */\n\n.the-dependency{}\n\n');
                         done();
                     });
                 });
@@ -110,30 +113,7 @@ module.exports = function(dsf){
             describe.skip('given a preprocessor', function () {
                 it('should modify css', function (done) {
 
-                    // shortcut dsf.getPreprocessor
-                    var getPreprocessor = dsf.getPreprocessor;
-                    dsf.getPreprocessor = function(){
-                        return {
-                            process: function(css, basePath, cb){
-                                cb(null, '/*preprocessed('+basePath+')*/' + css);
-                            }
-                        };
-                    };
-                    this.subject.config = {
-                        preprocessor:{
-                            css: 'harry potter'
-                        }
-                    };
-                    var inCss = this.subject.cache.css = '.the-css{}';
-                    this.subject.renderCss(function(err, outCss){
-                        expect(err).to.be.falsy;
-                        expect(outCss).to.equal('\n/*preprocessed(test/test-components/Dumbledore)*/\nbody{padding:0;margin:0}\n.the-css{}\n\n/* dependency: The/Dependency */\n\n.the-dependency{}\n\n');
 
-                        // remove shortcut
-                        dsf.getPreprocessor = getPreprocessor;
-
-                        done();
-                    });
                 });
             });
         });
