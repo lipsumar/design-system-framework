@@ -18,6 +18,11 @@ function ComponentBase(options){
 
 
 ComponentBase.prototype.getGlobPath = function(type) {
+    if(!this.config.glob[type]){
+        //@TODO find a way to do this in a single call
+        this.dsf.log.error('ComponentBase.getGlobPath: config.glob.'+type+' is not defined');
+        throw new Error('ComponentBase.getGlobPath: config.glob.'+type+' is not defined');
+    }
     return path.join(this.absPath, this.config.glob[type]);
 };
 
