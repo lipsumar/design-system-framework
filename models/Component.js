@@ -28,7 +28,7 @@ function Component(options){
     this.partialRegistered = false;
     this.missingPartial = false;
     this.baseDependencies = [];
-
+    this.dependencyOf = []; // array of componentIds depending on this
 
 
 }
@@ -60,7 +60,25 @@ Component.prototype.build = function(callback) {
 };
 
 Component.prototype.rebuild = function(callback) {
-    this.build(callback);
+    var self = this;
+    console.log('rebuilding... '+this.id);
+
+    this.build(function(){
+        if(self.dependencyOf.length > 0){
+            var next = function(i){
+                if(!self.dependencyOf[i]){
+                    callback();
+                    return;
+                }
+                var dependentComponent = self.dsf.getComponent(self.dependencyOf[i]);
+                console.log('-> rebuild '+dependentComponent.id+' because it depends on '+self.id);
+                dependentComponent.rebuild(next.bind(null, i+1));
+            };
+            next(0);
+        }else{
+            callback();
+        }
+    });
 };
 
 Component.prototype.addLocalConfig = function(callback) {
@@ -88,7 +106,8 @@ Component.prototype.addLocalConfig = function(callback) {
 };
 
 Component.prototype.resolveDependencies = function(callback) {
-    var dependencies = [],
+    var self = this,
+        dependencies = [],
         m,
         re = /\{\{> ?([a-zA-Z\/\-_]+)/gm;
 
@@ -110,9 +129,26 @@ Component.prototype.resolveDependencies = function(callback) {
 
 
     if(this.dependencies.length > 0){
-        this.dsf.whenLoaded(this.dependencies, this.cacheDependencies.bind(this, callback));
+        this.dsf.whenLoaded(this.dependencies, function(){
+
+            // mark dependencies as being a dependency of this
+            self.dependencies.forEach(function(dependencyId){
+                var dependency = self.dsf.getComponent(dependencyId);
+                dependency.addDependencyOf(self.id);
+            });
+
+            // and cache dependencies
+            self.cacheDependencies(callback);
+        });
     }else{
         callback();
+    }
+
+};
+
+Component.prototype.addDependencyOf = function(dependentComponentId) {
+    if(this.dependencyOf.indexOf(dependentComponentId) === -1){
+        this.dependencyOf.push(dependentComponentId);
     }
 
 };
