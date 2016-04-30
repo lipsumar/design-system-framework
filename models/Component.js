@@ -249,13 +249,14 @@ Component.prototype.getCss = function(withDependencies) {
 };
 
 ///@TODO make renderHtml async to pass string through .process()
-Component.prototype.renderHtml = function(context) {
+Component.prototype.renderHtml = function(context, callback) {
     if(this.cache.tpl){
-
-        if(!context && this.config.vars){
-            context = this.config.vars;
+        context = context || {};
+        if(this.config.vars){
+            context = _.merge({}, this.config.vars, context);
         }
-        return this.cache.tpl(context || {});
+        var html = this.cache.tpl(context);
+        this.process('html', html, callback);
     }
     return '';
 };
@@ -288,14 +289,14 @@ Component.prototype.process = function(type, str, callback) {
                     next(i+1);
                 });
 
-            }else{
+            }else if(callback){
                 callback(null, str);
             }
 
         };
         next(0);
 
-    }else{
+    }else if(callback){
         callback(null, str);
     }
 };
