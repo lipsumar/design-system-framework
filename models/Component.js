@@ -108,7 +108,7 @@ Component.prototype.addLocalConfig = function(callback) {
 
 Component.prototype.resolveDependencies = function(callback) {
     var self = this,
-        dependencies = [],
+        dependencies = this.config.dependencies || [],
         m,
         re = /\{\{> ?([a-zA-Z\/\-_]+)/gm;
 
