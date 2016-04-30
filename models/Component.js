@@ -6,6 +6,7 @@ var ComponentBase = require('./ComponentBase.js'),
     fs = require('fs'),
     async = require('async'),
     glob = require('glob'),
+    markdownIt = require('markdown-it'),
     gfile = require('gulp-file'),
     gulp = require('gulp'),
     through2 =  require('through2'),
@@ -275,7 +276,19 @@ Component.prototype.renderCss = function(callback) {
 
 };
 
-
+Component.prototype.renderDoc = function(callback) {
+    this.getResourcePaths('md', function(err, paths){
+        if(paths[0]){
+            fs.readFile(paths[0], function(err, file){
+                var md = new markdownIt();
+                var result = md.render(file.toString());
+                callback(null, result);
+            });
+        }else{
+            callback(null, 'No documentation found.');
+        }
+    });
+};
 
 Component.prototype.process = function(type, str, callback) {
     var self = this;
