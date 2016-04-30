@@ -191,6 +191,14 @@ Component.prototype.getResourcePaths = function(type, callback) {
 };
 
 
+Component.prototype.getResourceHandler = function(type) {
+    var handler = this.dsf.getResourceHandler(type);
+    if(handler){
+        handler = handler.bind(null, this);
+    }
+    return handler;
+};
+
 
 Component.prototype.cacheCss = function(cacheCssCallback) {
     var self = this;
@@ -269,6 +277,12 @@ Component.prototype.renderCss = function(callback) {
     }
 
 };
+
+Component.prototype.renderResource = function(type, callback) {
+    var handler = this.getResourceHandler(type);
+    handler(callback);
+};
+
 
 
 
