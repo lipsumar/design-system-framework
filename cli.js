@@ -15,34 +15,31 @@ console.log('');
 
     var commandLineCommands = require('command-line-commands');
 
-
     // define cli commands
     var cliCommands = [
         {
             name: 'help'
         },
         {
-            name: 'run',
-            definitions: [{
-                name: 'why',
-                type: String
-            }]
+            name: 'server'
         }
     ];
 
 
     var dsf = require('./lib/dsf');
 
-    function startServer(){
+    function startServer(openBrowser){
         dsf.log('Starting server...');
         require('./lib/server.js')(dsf);
-        require('openurl').open('http://localhost:3000');
+        if(openBrowser){
+            dsf.log('Open browser...');
+            require('openurl').open('http://localhost:'+dsf.server.port);
+        }
     }
 
 
     // start dsf
     dsf.init(function(){
-
 
         // add commands for plugins
         var plugins = dsf.getPlugins(),
@@ -71,7 +68,7 @@ console.log('');
             // delegate anything else to plugins
             default:
                 if(!command.name){ // except no command
-                    startServer();
+                    startServer(true);
                 }else{
                     dsf.log('Run plugin '+command.name);
                     cliPluginsById[command.name].func(command.options, function(){

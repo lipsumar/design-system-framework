@@ -71,6 +71,33 @@
     function $(n){var t=document.querySelector(n);return t&&(t.on=function(n,c){return t.addEventListener.call(t,n,function(n){c.call(t,n)})}),t}function $$(n){function t(n){[].forEach.call(this,n)}var c=n;return n&&"string"==typeof n&&(c=document.querySelectorAll(n)),{each:function(n,e){if(c instanceof NodeList)t.call(c,function(t){n.call(e||t)});else for(var l in c)c.hasOwnProperty(l)&&n.call(e||c[l],c[l],l,c)},on:function(n,e){t.call(c,function(t){t.addEventListener.call(t,n,e.bind(t))})}}}
 
 
+function getScript(source, callback) {
+    var script = document.createElement('script');
+    var prior = document.getElementsByTagName('script')[0];
+    script.async = 1;
+    prior.parentNode.insertBefore(script, prior);
+
+    script.onload = script.onreadystatechange = function( _, isAbort ) {
+        if(isAbort || !script.readyState || /loaded|complete/.test(script.readyState) ) {
+            script.onload = script.onreadystatechange = null;
+            script = undefined;
+
+            if(!isAbort) { if(callback) callback(); }
+        }
+    };
+
+    script.src = source;
+}
+
+
+
+    window.dsf = {
+        InspectorPlugins: {},
+        registerInspectorPlugin: function(pluginId, Plugin){
+            this.InspectorPlugins[pluginId] = Plugin;
+        }
+    };
+
 
     function renderComponentsList(components){
         console.log('renderComponentsList',components);
@@ -97,7 +124,7 @@
     function selectComponent(componentId){
         $('.item--active') && $('.item--active').classList.remove('item--active');
         $('.item[data-component="'+componentId+'"]').classList.add('item--active');
-        $('iframe').src = '/build/' + componentId;
+        $('iframe').src = 'build/' + componentId + '/';
 
         $('.header').classList.remove('u-hide');
         $('.header__title').innerHTML = componentId;
@@ -114,7 +141,7 @@
     }
 
     function fetchComponents(callback){
-        fetch('/components')
+        fetch('components')
             .then(function(resp){
                 return resp.json();
             })
@@ -125,22 +152,21 @@
 
 
 
-    function InspectorPlugin(){}
-    InspectorPlugin.prototype.render = function(componentId) {
-        var self = this;
-        this.el.innerHTML = 'inspector for '+componentId;
-    };
-
-
-
     var inspectorPlugins = [],
         inspectorPluginsById = {},
         currentInspectorPlugin;
-    function loadPlugins(plugins){
+    function loadPlugins(plugins, callback){
         console.log('loadPlugins',plugins);
 
         if(plugins.inspector){
-            plugins.inspector.forEach(function(inspectorPlugin){
+
+            function next(i){
+                var inspectorPlugin = plugins.inspector[i];
+                if(!inspectorPlugin){
+                    currentInspectorPlugin = inspectorPlugins[0];
+                    if(callback){ callback(); }
+                    return;
+                }
                 var tab = document.createElement('div');
                 tab.className = 'navigation-tabs__item';
                 tab.setAttribute('data-tab', inspectorPlugin.id);
@@ -153,24 +179,28 @@
                 el.setAttribute('data-tab', inspectorPlugin.id);
                 $('.js-insert-inspectors').appendChild(el);
 
-                var plugin = new InspectorPlugin(inspectorPlugin);
+                getScript('build/_plugin/'+inspectorPlugin.id+'/js', function(){
+                    var plugin = new window.dsf.InspectorPlugins[inspectorPlugin.id](inspectorPlugin);
+                    plugin.id = inspectorPlugin.id;
+                    plugin.config = inspectorPlugin;
+                    plugin.el = el;
+                    if(plugin.init){
+                        plugin.init();
+                    }
+                    inspectorPluginsById[inspectorPlugin.id] = plugin
+                    inspectorPlugins.push(plugin);
 
-                plugin.id = inspectorPlugin.id;
-                plugin.config = inspectorPlugin;
-                plugin.el = el;
-                if(plugin.init){
-                    plugin.init();
-                }
+                    next(i+1);
+                })
 
-                inspectorPluginsById[inspectorPlugin.id] = plugin
-                inspectorPlugins.push(plugin)
-            });
-            currentInspectorPlugin = inspectorPlugins[0];
+            }
+            next(0);
+
 
         }
     }
 
-    fetch('/plugins')
+    fetch('plugins')
         .then(function(resp){
             return resp.json();
         })

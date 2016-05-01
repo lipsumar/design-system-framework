@@ -265,8 +265,9 @@ Component.prototype.renderHtml = function(context, callback) {
         }
         var html = this.cache.tpl(context);
         this.process('html', html, callback);
+    }else{
+        callback(null, '');
     }
-    return '';
 };
 
 Component.prototype.renderCss = function(callback) {
@@ -293,7 +294,7 @@ Component.prototype.renderResource = function(type, callback) {
 
 Component.prototype.process = function(type, str, callback) {
     var self = this;
-    if(this.config.process && this.config.process[type]){
+    if(this.config.process && this.config.process[type] && typeof str === 'string' && str.trim()!==''){
         var plugins = this.config.process[type];
 
         var next = function(i){
