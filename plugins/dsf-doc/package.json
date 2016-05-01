@@ -1,0 +1,14 @@
+{
+  "name": "dsf-doc",
+  "version": "0.0.0",
+  "description": "Doc plugin for DSF",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Emmanuel Pire <piremmanuel@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "markdown-it": "^6.0.1"
+  }
+}
