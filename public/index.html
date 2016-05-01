@@ -36,51 +36,27 @@
             </div> -->
         </div>
         <div class="main">
-            <header class="header">
+            <header class="header u-hide">
                 <div class="header__suptitle">Components</div>
                 <h1 class="header__title">Something</h1>
             </header>
             <div class="component">
                 <iframe class="component__iframe" frameborder="0"></iframe>
             </div>
-            <div class="component-documentation">
-                <nav class="navigation-tabs">
-                    <a href="#{}" class="navigation-tabs__item navigation-tabs__item--active" data-tab="doc">Documentation</a>
-                    <a href="#{}" class="navigation-tabs__item" data-tab="source">Source</a>
+            <div class="inspector u-hide">
+                <nav class="navigation-tabs js-insert-inspector-tabs">
+                    <!-- <a href="#{}" class="navigation-tabs__item navigation-tabs__item--active" data-tab="doc">Documentation</a>
+                    <a href="#{}" class="navigation-tabs__item" data-tab="source">Source</a> -->
                 </nav>
-                <div class="tab-content tab-content--active" data-tab="doc">
+                <div class="js-insert-inspectors"></div>
+                <!-- <div class="tab-content tab-content--active" data-tab="doc">
                     <h2 class="doc-title">Overview</h2>
                     <p>This component is used to present something. Here some other helpful text.</p>
 
                     <h2 class="doc-title">How to use it</h2>
                     <p>Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Curabitur blandit tempus porttitor. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-                </div>
-                <div class="tab-content" data-tab="source">
-                    <div class="cols">
-                        <div class="col-1-2">
-                            <h2 class="doc-title">CSS</h2>
-<pre><code class="html">.the-component{
-    background-color: #00BFA5;
-    padding:1em 2em;
-    text-align: center;
-    color:#FFF;
-    border-radius: 3px;
-    overflow: hidden;
-}
-</code></pre>
-                        </div>
-                        <div class="col-1-2">
-                            <h2 class="doc-title">Markup</h2>
-<pre><code class="html">&lt;div class="the-component"&gt;
-    Ze component
-&lt;/div&gt;
-</code></pre>
-                        </div>
+                </div> -->
 
-                    </div>
-
-
-                </div>
 
 
             </div>
@@ -91,26 +67,45 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
 (function(){
-    var $ = document.querySelector.bind(document),
-        $$ = document.querySelectorAll.bind(document);
+    // https://gist.github.com/lipsumar/d99d5e79d530429887eaf9bc32b5f986
+    function $(n){var t=document.querySelector(n);return t&&(t.on=function(n,c){return t.addEventListener.call(t,n,function(n){c.call(t,n)})}),t}function $$(n){function t(n){[].forEach.call(this,n)}var c=n;return n&&"string"==typeof n&&(c=document.querySelectorAll(n)),{each:function(n,e){if(c instanceof NodeList)t.call(c,function(t){n.call(e||t)});else for(var l in c)c.hasOwnProperty(l)&&n.call(e||c[l],c[l],l,c)},on:function(n,e){t.call(c,function(t){t.addEventListener.call(t,n,e.bind(t))})}}}
 
-    // init tabs
-    var tabs = $$('.navigation-tabs__item');
-    [].forEach.call(tabs, function(tab){
-        tab.addEventListener('click', function(e){
-            e.preventDefault();
-            var el = e.currentTarget,
-                tabId = el.getAttribute('data-tab');
-            $('.navigation-tabs__item--active').classList.remove('navigation-tabs__item--active');
-            el.classList.add('navigation-tabs__item--active');
-            $('.tab-content--active').classList.remove('tab-content--active');
-            $('.tab-content[data-tab="' + tabId + '"]').classList.add('tab-content--active');
-        });
-    });
+
+function getScript(source, callback) {
+    var script = document.createElement('script');
+    var prior = document.getElementsByTagName('script')[0];
+    script.async = 1;
+    prior.parentNode.insertBefore(script, prior);
+
+    script.onload = script.onreadystatechange = function( _, isAbort ) {
+        if(isAbort || !script.readyState || /loaded|complete/.test(script.readyState) ) {
+            script.onload = script.onreadystatechange = null;
+            script = undefined;
+
+            if(!isAbort) { if(callback) callback(); }
+        }
+    };
+
+    script.src = source;
+}
+
+
+
+    window.dsf = {
+        InspectorPlugins: {},
+        registerInspectorPlugin: function(pluginId, Plugin){
+            this.InspectorPlugins[pluginId] = Plugin;
+        }
+    };
 
 
     function renderComponentsList(components){
-        console.log(components);
+        console.log('renderComponentsList',components);
+        if(components === 'still fetching components'){
+            setTimeout(fetchComponents, 300);
+            return;
+        }
+
         var html = '<div class="group"><div class="group__title">Components</div>';
         components.forEach(function(component){
             html+='<div class="item" data-component="'+component.id+'">'+component.id+'</div>';
@@ -118,31 +113,98 @@
         html+= '</div>';
         $('.js-insert-menu').innerHTML = html;
 
-        var items = document.querySelectorAll('.item');
-        [].forEach.call(items, function(itemEl){
-            itemEl.addEventListener('click', function(e){
-                var el = e.currentTarget,
-                    componentId = el.getAttribute('data-component');
-                selectComponent(componentId);
+        $$('.item').on('click', function(e){
+            var el = e.currentTarget,
+                componentId = el.getAttribute('data-component');
+            selectComponent(componentId);
 
-
-            });
         });
     }
 
     function selectComponent(componentId){
         $('.item--active') && $('.item--active').classList.remove('item--active');
         $('.item[data-component="'+componentId+'"]').classList.add('item--active');
-        $('iframe').src = '/build/' + componentId;
+        $('iframe').src = 'build/' + componentId + '/';
+
+        $('.header').classList.remove('u-hide');
         $('.header__title').innerHTML = componentId;
+
+        $('.component').classList.remove('u-hide');
+
+        if(inspectorPlugins.length > 0){
+            $('.inspector').classList.remove('u-hide');
+            $('.navigation-tabs__item[data-tab="'+currentInspectorPlugin.id+'"]').classList.add('navigation-tabs__item--active');
+            $('.tab-content[data-tab="'+currentInspectorPlugin.id+'"]').classList.add('tab-content--active');
+            currentInspectorPlugin.render(componentId);
+        }
+
     }
 
-    fetch('/components')
+    function fetchComponents(callback){
+        fetch('components')
+            .then(function(resp){
+                return resp.json();
+            })
+            .then(callback);
+    }
+    fetchComponents(renderComponentsList);
+
+
+
+
+    var inspectorPlugins = [],
+        inspectorPluginsById = {},
+        currentInspectorPlugin;
+    function loadPlugins(plugins, callback){
+        console.log('loadPlugins',plugins);
+
+        if(plugins.inspector){
+
+            function next(i){
+                var inspectorPlugin = plugins.inspector[i];
+                if(!inspectorPlugin){
+                    currentInspectorPlugin = inspectorPlugins[0];
+                    if(callback){ callback(); }
+                    return;
+                }
+                var tab = document.createElement('div');
+                tab.className = 'navigation-tabs__item';
+                tab.setAttribute('data-tab', inspectorPlugin.id);
+                tab.innerHTML = inspectorPlugin.name;
+                $('.js-insert-inspector-tabs').appendChild(tab);
+
+
+                var el = document.createElement('div');
+                el.className = 'tab-content';
+                el.setAttribute('data-tab', inspectorPlugin.id);
+                $('.js-insert-inspectors').appendChild(el);
+
+                getScript('build/_plugin/'+inspectorPlugin.id+'/js', function(){
+                    var plugin = new window.dsf.InspectorPlugins[inspectorPlugin.id](inspectorPlugin);
+                    plugin.id = inspectorPlugin.id;
+                    plugin.config = inspectorPlugin;
+                    plugin.el = el;
+                    if(plugin.init){
+                        plugin.init();
+                    }
+                    inspectorPluginsById[inspectorPlugin.id] = plugin
+                    inspectorPlugins.push(plugin);
+
+                    next(i+1);
+                })
+
+            }
+            next(0);
+
+
+        }
+    }
+
+    fetch('plugins')
         .then(function(resp){
             return resp.json();
         })
-        .then(renderComponentsList);
-
+        .then(loadPlugins);
 
     // init socket
     var socket = io();

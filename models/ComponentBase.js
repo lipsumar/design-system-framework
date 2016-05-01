@@ -9,11 +9,17 @@ var pathUtils = require('../lib/utils/path.js'),
  *        * path {string}     relative path (from process.cwd) to component directory
  */
 function ComponentBase(options){
+    'use strict';
     this.options = options || {};
     this.dsf = options.dsf;
     this.path = options.path;
     this.absPath = pathUtils.absolute(this.path);
-    this.config = _.merge({}, this.dsf.getConfig(), options.config);
+    if(options.config && options.config.doNotInheritConfig){
+        this.config = _.merge({}, options.config);
+    }else{
+        this.config = _.merge({}, this.dsf.getConfig(), options.config);
+    }
+
 }
 
 

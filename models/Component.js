@@ -191,6 +191,14 @@ Component.prototype.getResourcePaths = function(type, callback) {
 };
 
 
+Component.prototype.getResourceHandler = function(type) {
+    var handler = this.dsf.getResourceHandler(type);
+    if(handler){
+        handler = handler.bind(null, this);
+    }
+    return handler;
+};
+
 
 Component.prototype.cacheCss = function(cacheCssCallback) {
     var self = this;
@@ -257,8 +265,9 @@ Component.prototype.renderHtml = function(context, callback) {
         }
         var html = this.cache.tpl(context);
         this.process('html', html, callback);
+    }else{
+        callback(null, '');
     }
-    return '';
 };
 
 Component.prototype.renderCss = function(callback) {
@@ -275,11 +284,17 @@ Component.prototype.renderCss = function(callback) {
 
 };
 
+Component.prototype.renderResource = function(type, callback) {
+    var handler = this.getResourceHandler(type);
+    handler(callback);
+};
+
+
 
 
 Component.prototype.process = function(type, str, callback) {
     var self = this;
-    if(this.config.process && this.config.process[type]){
+    if(this.config.process && this.config.process[type] && typeof str === 'string' && str.trim()!==''){
         var plugins = this.config.process[type];
 
         var next = function(i){

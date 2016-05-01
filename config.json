@@ -2,7 +2,8 @@
     "components-path": "Components",
     "glob":{
         "css": "{css/,}*.css",
-        "html": "{html/,}*.{hbs,html}",
+        "html": "*.{hbs,html}",
+        "js": "{js/,}*.js",
         "config": "config.json"
     }
 }
