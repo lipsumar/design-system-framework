@@ -40,6 +40,7 @@ console.log('');
 
     // start dsf
     dsf.init(function(){
+        dsf.start();
 
         // add commands for plugins
         var plugins = dsf.getPlugins(),
