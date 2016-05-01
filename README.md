@@ -3,21 +3,26 @@
 [![Build status: https://travis-ci.org/lipsumar/design-system-framework](https://api.travis-ci.org/lipsumar/design-system-framework.svg?branch=master)](https://travis-ci.org/lipsumar/design-system-framework)
 [![Join the chat at https://gitter.im/lipsumar/design-system-framework](https://badges.gitter.im/lipsumar/design-system-framework.svg)](https://gitter.im/lipsumar/design-system-framework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Build living styleguides and make sure they stay up to date.
+> Create and maintain web component libraries for websites.
 
 ![Design System Framework UI](resources/documentation/dsf-ui.png)
 
 
----
-
-**Note: This is an alpha release, not all features are fully available**
-
----
-
 
 ## What is this ?
 
-Design System Framework (DSF) helps **developers**, **designers** and **editors** to use design systems in the best way possible:
+DSF is primarily a way for **front-end developers** to work and package websites at a **component level**. DSF helps organize code and maintain a component library. It is especially made to work with _websites_, not web apps. 
+
+If you make themes for CMS (or static pages) and want to organize the way you work, build and communicate on web components (especially with design systems), you found the right tool.
+
+* Define components made of HTML, CSS and JS
+* Styleguide-like UI 
+* Component-level build with Gulp plugins (and more to come)
+* Extensible with plugins (both for UI and build)
+
+
+-> [Documentation](https://github.com/lipsumar/design-system-framework/wiki) <-
+
 
 ### For developers
 
@@ -89,41 +94,4 @@ An up-to-date documentation of the design system is an invaluable asset for desi
 A living styleguide allows you to test the limits of components: _does this title fit in our homepage?_ You can simply test your copy in an actual browser, using the actual production code with no programming knowledge needed.
 
 
-
-## Getting started
-
-### 1. You need a project with all components in a single directory
-
-If you need one, just clone this example: https://github.com/lipsumar/dsf-example-project
-
-`$ git clone https://github.com/lipsumar/dsf-example-project.git`
-
-
-### 2. Install DSF
-
-At the root of your project, run:
-
-`$ npm install design-system-framework`
-
-### 3. Run DSF
-
-`$ node node_modules/design-system-framework/cli.js`
-
-To make things easier, you can setup the following npm script in your `package.json`:
-
-```json
-  "scripts": {
-    "dsf": "node node_modules/design-system-framework/cli.js"
-  },
-```
-
-and simply run:
-
-`$ npm run dsf`
-
-
-## Configuration
-
-You can configure DSF via a file called `config.json` at the root of your project and for each component.
-
-See the [wiki page for `config.json`](https://github.com/lipsumar/design-system-framework/wiki/config.json).
+-> [Documentation](https://github.com/lipsumar/design-system-framework/wiki) <-
