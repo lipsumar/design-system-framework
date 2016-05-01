@@ -14,26 +14,6 @@
         <div class="sidebar">
             <div class="brand"><span>Design System Framework</span></div>
             <div class="js-insert-menu"></div>
-            <!-- <nav class="group">
-                <div class="group__title">Components</div>
-                <div class="group__content">
-                    <a href="#{}" class="item">Something</a>
-                    <a href="#{}" class="item">Foo bar</a>
-                    <a href="#{}" class="item">Hello there</a>
-                    <a href="#{}" class="item">Mysterious item</a>
-                    <a href="#{}" class="item">Last item</a>
-                </div>
-            </nav>
-            <div class="group">
-                <div class="group__title">Other cool stuff</div>
-                <div class="group__content">
-                    <a href="#{}" class="item item--active">Something</a>
-                    <a href="#{}" class="item">Foo bar</a>
-                    <a href="#{}" class="item">Hello there</a>
-                    <a href="#{}" class="item">Mysterious item</a>
-                    <a href="#{}" class="item">Last item</a>
-                </div>
-            </div> -->
         </div>
         <div class="main">
             <header class="header u-hide">
@@ -44,21 +24,8 @@
                 <iframe class="component__iframe" frameborder="0"></iframe>
             </div>
             <div class="inspector u-hide">
-                <nav class="navigation-tabs js-insert-inspector-tabs">
-                    <!-- <a href="#{}" class="navigation-tabs__item navigation-tabs__item--active" data-tab="doc">Documentation</a>
-                    <a href="#{}" class="navigation-tabs__item" data-tab="source">Source</a> -->
-                </nav>
+                <nav class="navigation-tabs js-insert-inspector-tabs"></nav>
                 <div class="js-insert-inspectors"></div>
-                <!-- <div class="tab-content tab-content--active" data-tab="doc">
-                    <h2 class="doc-title">Overview</h2>
-                    <p>This component is used to present something. Here some other helpful text.</p>
-
-                    <h2 class="doc-title">How to use it</h2>
-                    <p>Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Curabitur blandit tempus porttitor. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-                </div> -->
-
-
-
             </div>
         </div>
     </div>
@@ -71,23 +38,26 @@
     function $(n){var t=document.querySelector(n);return t&&(t.on=function(n,c){return t.addEventListener.call(t,n,function(n){c.call(t,n)})}),t}function $$(n){function t(n){[].forEach.call(this,n)}var c=n;return n&&"string"==typeof n&&(c=document.querySelectorAll(n)),{each:function(n,e){if(c instanceof NodeList)t.call(c,function(t){n.call(e||t)});else for(var l in c)c.hasOwnProperty(l)&&n.call(e||c[l],c[l],l,c)},on:function(n,e){t.call(c,function(t){t.addEventListener.call(t,n,e.bind(t))})}}}
 
 
-function getScript(source, callback) {
-    var script = document.createElement('script');
-    var prior = document.getElementsByTagName('script')[0];
-    script.async = 1;
-    prior.parentNode.insertBefore(script, prior);
+    function getScript(source, callback) {
+        var script = document.createElement('script');
+        var prior = document.getElementsByTagName('script')[0];
+        script.async = 1;
+        prior.parentNode.insertBefore(script, prior);
 
-    script.onload = script.onreadystatechange = function( _, isAbort ) {
-        if(isAbort || !script.readyState || /loaded|complete/.test(script.readyState) ) {
-            script.onload = script.onreadystatechange = null;
-            script = undefined;
+        script.onload = script.onreadystatechange = function( _, isAbort ) {
+            if(isAbort || !script.readyState || /loaded|complete/.test(script.readyState) ) {
+                script.onload = script.onreadystatechange = null;
+                script = undefined;
 
-            if(!isAbort) { if(callback) callback(); }
-        }
-    };
+                if(!isAbort) { if(callback) callback(); }
+            }
+        };
 
-    script.src = source;
-}
+        script.src = source;
+    }
+
+
+
 
 
 
