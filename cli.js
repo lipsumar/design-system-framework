@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // get script arguments without the first two ("node" and "cli.js" )
 var ARGV = process.argv.slice(2);
 
