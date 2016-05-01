@@ -13,8 +13,8 @@ module.exports = function(dsf){
         before(function () {
             this.subject = new Component({
                 dsf: dsf,
-                path: 'test/test-components/Base',
-                id: 'Base'
+                path: 'test/test-components/Dumbledore',
+                id: 'Dumbledore'
             });
 
         });
@@ -44,10 +44,10 @@ module.exports = function(dsf){
             it('should cache HTML', function (done) {
                 var subject = this.subject;
                 subject.resourcePaths = {
-                    html: path.join(subject.absPath,'Base.html')
+                    html: path.join(subject.absPath,'main.html')
                 };
                 this.subject.cacheHtml(function(){
-                    expect(subject.cache.html.trim()).to.equal('<p>This is the HTML content of Base</p>');
+                    expect(subject.cache.html.trim()).to.equal('<p>Use the force, Harry</p>');
                     done();
                 });
             });
@@ -57,7 +57,7 @@ module.exports = function(dsf){
             it('should cache CSS', function (done) {
                 var subject = this.subject;
                 subject.resourcePaths = {
-                    css: [path.join(subject.absPath,'Base.css')]
+                    css: [path.join(subject.absPath,'style.css')]
                 };
                 this.subject.cacheCss(function(){
                     expect(subject.cache.css.trim()).to.equal('body{padding:0;margin:0}');
@@ -96,44 +96,24 @@ module.exports = function(dsf){
 
         });
 
-        describe('#preprocessCss', function () {
+        describe('#renderCss', function () {
             describe('given no preprocessor', function () {
+                before(function () {
+                    this.subject.config.process = {};
+                    this.subject.cache.css = 'body{padding:0;margin:0}';
+                });
                 it('should not modify css', function (done) {
-                    var inCss = '.the-css{}';
-                    this.subject.preprocessCss(inCss, function(err, outCss){
+                    this.subject.renderCss(function(err, outCss){
                         expect(err).to.be.falsy;
-                        expect(outCss).to.equal(inCss);
+                        expect(outCss).to.equal('body{padding:0;margin:0}\n\n/* dependency: The/Dependency */\n\n.the-dependency{}\n\n');
                         done();
                     });
                 });
             });
-            describe('given a preprocessor', function () {
+            describe.skip('given a preprocessor', function () {
                 it('should modify css', function (done) {
 
-                    // shortcut dsf.getPreprocessor
-                    var getPreprocessor = dsf.getPreprocessor;
-                    dsf.getPreprocessor = function(){
-                        return {
-                            process: function(css, basePath, cb){
-                                cb(null, '/*preprocessed('+basePath+')*/' + css);
-                            }
-                        };
-                    };
-                    this.subject.config = {
-                        preprocessor:{
-                            css: 'harry potter'
-                        }
-                    };
-                    var inCss = '.the-css{}';
-                    this.subject.preprocessCss(inCss, function(err, outCss){
-                        expect(err).to.be.falsy;
-                        expect(outCss).to.equal('/*preprocessed(test/test-components/Base)*/' + inCss);
 
-                        // remove shortcut
-                        dsf.getPreprocessor = getPreprocessor;
-
-                        done();
-                    });
                 });
             });
         });

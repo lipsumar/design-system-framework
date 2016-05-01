@@ -2,7 +2,7 @@
     "components-path": "test/test-components",
     "base":{
         "css":[
-            "Base"
+            "Dumbledore"
         ]
     }
 }

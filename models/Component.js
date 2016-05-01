@@ -5,7 +5,12 @@ var ComponentBase = require('./ComponentBase.js'),
     mkdirp = require('mkdirp'),
     fs = require('fs'),
     async = require('async'),
-    glob = require('glob');
+    glob = require('glob'),
+    gfile = require('gulp-file'),
+    gulp = require('gulp'),
+    through2 =  require('through2'),
+    runSequence = require('run-sequence'),
+    chalk = require('chalk');
 
 
 //var partialsRegex = /\{\{> ?([a-zA-Z\/\-_]+)/gm;
@@ -19,15 +24,12 @@ function Component(options){
     ComponentBase.call(this, options);
 
     this.id = options.id;
-    this.buildPath = path.join(__dirname, '../public/_built/' + this.id);///@TODO find something more elegant than path.join(__dirname, ) to reference preoject files
-    this.standaloneCssPath = path.join(this.buildPath + '/standalone.css');
-    this.standaloneCssPublicPath = '/_built/' + this.id + '/standalone.css';
     this.resourcePaths = {};
     this.cache = {};
     this.partialRegistered = false;
     this.missingPartial = false;
     this.baseDependencies = [];
-
+    this.dependencyOf = []; // array of componentIds depending on this
 
 
 }
@@ -40,18 +42,11 @@ Component.prototype.build = function(callback) {
         // override config with the component's own config.json
         this.addLocalConfig.bind(this),
 
-        this.cacheResourcePathes.bind(this),
-        this.cacheResources.bind(this),
-
-        mkdirp.bind(null, this.buildPath),
+        this.cacheHtml.bind(this),
+        this.cacheCss.bind(this),
 
         // dependencies
         this.resolveDependencies.bind(this),
-
-        // build static stuff
-
-        this.buildStandaloneCss.bind(this),
-
 
         // register handlebars partial
         this.registerPartial.bind(this),
@@ -66,7 +61,25 @@ Component.prototype.build = function(callback) {
 };
 
 Component.prototype.rebuild = function(callback) {
-    this.build(callback);
+    var self = this;
+    this.log('rebuilding... '+this.id);
+
+    this.build(function(){
+        if(self.dependencyOf.length > 0){
+            var next = function(i){
+                if(!self.dependencyOf[i]){
+                    callback();
+                    return;
+                }
+                var dependentComponent = self.dsf.getComponent(self.dependencyOf[i]);
+                self.log('-> rebuild '+dependentComponent.id+' because it depends on '+self.id);
+                dependentComponent.rebuild(next.bind(null, i+1));
+            };
+            next(0);
+        }else{
+            callback();
+        }
+    });
 };
 
 Component.prototype.addLocalConfig = function(callback) {
@@ -76,7 +89,7 @@ Component.prototype.addLocalConfig = function(callback) {
         if(paths.length===1){
                 self.dsf.util.file.readJSON(paths[0], function(err, localConfig){
                 if(err){
-                    console.log('WARNING: '+err);
+                    self.warning('WARNING: '+err);
                     callback();// fail silently
                     return;
                 }
@@ -94,7 +107,8 @@ Component.prototype.addLocalConfig = function(callback) {
 };
 
 Component.prototype.resolveDependencies = function(callback) {
-    var dependencies = [],
+    var self = this,
+        dependencies = this.config.dependencies || [],
         m,
         re = /\{\{> ?([a-zA-Z\/\-_]+)/gm;
 
@@ -116,9 +130,26 @@ Component.prototype.resolveDependencies = function(callback) {
 
 
     if(this.dependencies.length > 0){
-        this.dsf.whenLoaded(this.dependencies, this.cacheDependencies.bind(this, callback));
+        this.dsf.whenLoaded(this.dependencies, function(){
+
+            // mark dependencies as being a dependency of this
+            self.dependencies.forEach(function(dependencyId){
+                var dependency = self.dsf.getComponent(dependencyId);
+                dependency.addDependencyOf(self.id);
+            });
+
+            // and cache dependencies
+            self.cacheDependencies(callback);
+        });
     }else{
         callback();
+    }
+
+};
+
+Component.prototype.addDependencyOf = function(dependentComponentId) {
+    if(this.dependencyOf.indexOf(dependentComponentId) === -1){
+        this.dependencyOf.push(dependentComponentId);
     }
 
 };
@@ -144,15 +175,7 @@ Component.prototype.registerPartial = function(callback) {
     callback();
 };
 
-Component.prototype.cacheResourcePathes = function(callback) {
-    var self = this;
-    async.map(['css','html'], this.getResourcePaths.bind(this), function(err, paths){
-        self.resourcePaths.css = paths[0];
-        self.resourcePaths.html = paths[1][0];// there can be only one template
 
-        callback();
-    });
-};
 
 /**
  * Returns all existing files for the given resource type
@@ -167,101 +190,162 @@ Component.prototype.getResourcePaths = function(type, callback) {
     });
 };
 
-Component.prototype.cacheResources = function(callback) {
-    async.parallel([
-        this.cacheCss.bind(this),
-        this.cacheHtml.bind(this)
-    ], callback);
 
+Component.prototype.getResourceHandler = function(type) {
+    var handler = this.dsf.getResourceHandler(type);
+    if(handler){
+        handler = handler.bind(null, this);
+    }
+    return handler;
 };
+
 
 Component.prototype.cacheCss = function(cacheCssCallback) {
     var self = this;
 
-    async.map(this.resourcePaths.css, fs.readFile, function(err, files){
-        if(err) throw err;
+    this.getResourcePaths('css',function(err, files){
+        if(files.length>0){
+            async.map(files, fs.readFile, function(err, files){
+                if(err) throw err;
 
-        async.reduce(files, '', function(memo, item, callback){
-            callback(null, memo + '\n' + item.toString());
-        }, function(err, css){
-            if(err) throw err;
-            self.cache.css = css;
+                async.reduce(files, '', function(memo, item, callback){
+                    callback(null, memo + '\n' + item.toString());
+                }, function(err, css){
+                    if(err) throw err;
+                    self.cache.css = css;
+                    cacheCssCallback();
+                });
+            });
+        }else{
             cacheCssCallback();
-        });
+        }
     });
+
+
 
 };
 
 
 Component.prototype.cacheHtml = function(callback) {
+
     var self = this;
 
-    if(this.resourcePaths.html){
-        fs.readFile(this.resourcePaths.html, function(err, file){
-            var html = file.toString();
-            self.cache.html = html;
-            self.cache.tpl = self.dsf.getHandlebars().compile(html);
+    this.getResourcePaths('html',function(err, files){
+        if(files.length>0){
+            //@TODO gulp is probably not needed here
+            var stream = gulp.src(self.getGlobPath('html'));
+            stream.pipe(through2.obj(function(file, enc, cb){
+
+                var html = file.contents.toString();
+                self.cache.html = html;
+                self.cache.tpl = self.dsf.getHandlebars().compile(html);
+                callback();
+
+            }));
+        }else{
             callback();
-        });
-    }else{
-        self.cache.html = '';
-        callback();
-    }
+        }
+    });
 
 };
 
 
-Component.prototype.buildStandaloneCss = function(callback) {
-    var self = this,
-        css = this.getCss(true);
-
-    if(!this.isBaseCss){
-        this.dsf.getBaseCss(function(baseCss){
-            finish(baseCss + css);
-        });
-    }else{
-        finish(css);
-    }
-
-    function finish(css){
-        self.preprocessCss(css, function(err, css){
-            if(err) throw err;
-            fs.writeFile(self.standaloneCssPath, css, callback);
-        });
-    }
-
-};
-
-Component.prototype.preprocessCss = function(css, callback) {
-    var self = this;
-    if(this.config.preprocessor && this.config.preprocessor.css){
-        var preprocessor = this.dsf.getPreprocessor(this.config.preprocessor.css);
-        preprocessor.process(css, this.path, function(err, out){
-            if(err){
-                console.log('['+self.id+'] PREPROCESSOR ERROR:\n  '+err);
-            }
-            callback(null, out);
-        });
-    }else{
-        callback(null, css);
-    }
-};
-
+// without base css
 Component.prototype.getCss = function(withDependencies) {
     // dependencies CSS after component CSS so user can't override dependencies
     return this.cache.css + ((withDependencies && this.cache.cssDependencies) ? this.cache.cssDependencies : '');
 };
 
-Component.prototype.render = function(context) {
+///@TODO make renderHtml async to pass string through .process()
+Component.prototype.renderHtml = function(context, callback) {
     if(this.cache.tpl){
-        return this.cache.tpl(context || (this.cache.config ? this.cache.config : {}));
+        context = context || {};
+        if(this.config.vars){
+            context = _.merge({}, this.config.vars, context);
+        }
+        var html = this.cache.tpl(context);
+        this.process('html', html, callback);
+    }else{
+        callback(null, '');
     }
-    return '';
+};
+
+Component.prototype.renderCss = function(callback) {
+    var self = this,
+        css = this.getCss(true);
+
+    if(!this.isBaseCss){
+        this.dsf.getBaseCss(function(baseCss){
+            self.process('css', baseCss + css, callback);
+        });
+    }else{
+        self.process('css', css, callback);
+    }
+
+};
+
+Component.prototype.renderResource = function(type, callback) {
+    var handler = this.getResourceHandler(type);
+    handler(callback);
 };
 
 
 
 
+Component.prototype.process = function(type, str, callback) {
+    var self = this;
+    if(this.config.process && this.config.process[type] && typeof str === 'string' && str.trim()!==''){
+        var plugins = this.config.process[type];
 
+        var next = function(i){
+            if(plugins[i]){
+                gulpTask(self.id + '_' + plugins[i], str, require(plugins[i]), self.getDestPath(), function(err, out){
+                    str = out;
+                    next(i+1);
+                });
+
+            }else if(callback){
+                callback(null, str);
+            }
+
+        };
+        next(0);
+
+    }else if(callback){
+        callback(null, str);
+    }
+};
+
+function gulpTask(taskName, str, module, dest, callback){
+    gulp.task(taskName, function(){
+        return gfile(taskName, str, {src:true})
+            .pipe(module())
+            .pipe(gulp.dest(dest))
+            .pipe(through2.obj(function(file,enc,cb){
+                callback(null, file.contents.toString());
+                cb();
+            }));
+    });
+
+    //gulp.start([this.id + '.' + type]);
+    runSequence([taskName]);
+}
+
+Component.prototype.getDestPath = function() {
+    return path.join(__dirname, '../public/_built/'+this.id+'/');
+};
+
+function logId(){
+    return chalk.bgBlue(' '+this.id+' ');
+}
+Component.prototype.log = function(msg) {
+    msg = logId.call(this) + ' ' + msg;
+    this.dsf.log(msg);
+};
+
+Component.prototype.warning = function(msg) {
+    msg = logId.call(this) + ' ' + chalk.yellow(msg);
+    this.dsf.log(msg, true);
+};
 
 module.exports = Component;

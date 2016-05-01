@@ -17,7 +17,7 @@ module.exports = function(dsf){
             before(function () {
                 this.subject = new ComponentCandidate({
                     dsf: dsf,
-                    path: 'test/test-components/Base'
+                    path: 'test/test-components/Dumbledore'
                 });
             });
 

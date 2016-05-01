@@ -1,0 +1,15 @@
+{
+  "node": true,
+  "browser": true,
+  "bitwise": true,
+  "curly": true,
+  "eqeqeq": true,
+  "globals": {},
+  "latedef": true,
+  "maxparams": 3,
+  "noarg": true,
+  "nonew": true,
+  "strict": "implied",
+  "undef": true,
+  "unused": true
+}

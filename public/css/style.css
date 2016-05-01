@@ -13,6 +13,11 @@ h1,h2,h3,h4{font-weight: normal;margin:0;}
 .cols .col-1-2{width:50%;padding:0 1em;}
 .cols .col-1-2:first-child{padding-left: 0;}
 .cols .col-1-2:last-child{padding-right: 0;}
+
+
+.u-hide{display:none !important;}
+
+
 .app{
 	display: flex;
 }
@@ -102,7 +107,7 @@ h1,h2,h3,h4{font-weight: normal;margin:0;}
 }
 
 
-.component-documentation{
+.inspector{
 	border-top:1px solid #1D686B;
 	margin-top:0.8em;
 	background-color: #FCFDFD;

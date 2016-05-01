@@ -1,0 +1,5 @@
+Usage: dsf <command> [<args>]
+
+The commands are:
+   server     Start the DSF server
+   help       Print this screen
