@@ -3,6 +3,9 @@
   "version": "0.3.0",
   "description": "A simple framework to create living design systems",
   "main": "lib/dsf.js",
+  "bin": {
+    "dsf": "./cli.js"
+  },
   "scripts": {
     "test": "./node_modules/.bin/mocha --reporter spec",
     "start": "node server.js"
