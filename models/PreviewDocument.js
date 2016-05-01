@@ -21,13 +21,17 @@ PreviewDocument.prototype.addComponent = function(component) {
     this.components.push(component);
 };
 
-PreviewDocument.prototype.render = function() {
-
-    return pageTemplate({
-        component: this.components[0],
-        html: this.components[0].renderHtml(),
-        cacheBust: (new Date()).getTime()
+PreviewDocument.prototype.render = function(context, callback) {
+    var self = this;
+    this.components[0].renderHtml(context, function(err, html){
+        var doc = pageTemplate({
+            component: self.components[0],
+            html: html,
+            cacheBust: (new Date()).getTime()
+        });
+        callback(null, doc);
     });
+
 };
 
 module.exports = PreviewDocument;
