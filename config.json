@@ -4,6 +4,8 @@
         "css": "{css/,}*.css",
         "html": "*.{hbs,html}",
         "js": "{js/,}*.js",
-        "config": "config.json"
-    }
+        "config": "config.json",
+        "doc": "*.md"
+    },
+    "plugins":[]
 }
