@@ -78,6 +78,7 @@
 
         var html = '<div class="group"><div class="group__title">Components</div>';
         components.forEach(function(component){
+            if(component.id.split('/')[0]==='_plugin') return;
             html+='<div class="item" data-component="'+component.id+'">'+component.id+'</div>';
         });
         html+= '</div>';
