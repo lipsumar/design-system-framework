@@ -253,7 +253,7 @@ Component.prototype.cacheHtml = function(callback) {
 // without base css
 Component.prototype.getCss = function(withDependencies) {
     // dependencies CSS after component CSS so user can't override dependencies
-    return this.cache.css + ((withDependencies && this.cache.cssDependencies) ? this.cache.cssDependencies : '');
+    return (this.cache.css || '') + ((withDependencies && this.cache.cssDependencies) ? this.cache.cssDependencies : '');
 };
 
 ///@TODO make renderHtml async to pass string through .process()
