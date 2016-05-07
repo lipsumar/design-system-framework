@@ -184,6 +184,11 @@
         selectComponent(resp.id);
     });
 
+    socket.on('new', function(resp){
+        console.log('new', resp);
+        fetchComponents(renderComponentsList);
+    })
+
 }());
     </script>
 </body>
