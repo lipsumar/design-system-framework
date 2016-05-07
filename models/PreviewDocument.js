@@ -8,8 +8,9 @@ var fs = require('fs'),
     A missing var will simply return its name:
     {{myMissingVar}} => "myMissingVar"
  */
-Handlebars.registerHelper('helperMissing', function(options) {
-    var varName = options.name;
+Handlebars.registerHelper('helperMissing', function() {
+    var options = arguments[arguments.length - 1],
+        varName = options.name;
     return varName;
 });
 
