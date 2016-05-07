@@ -258,11 +258,18 @@ Component.prototype.getCss = function(withDependencies) {
 
 
 Component.prototype.renderHtml = function(context, callback) {
+
+    if(arguments.length < 2){
+        this.error('renderHtml called with not enough arguments');
+        return;
+    }
+
     if(this.cache.tpl){
         context = context || {};
         if(this.config.vars){
             context = _.merge({}, this.config.vars, context);
         }
+
         var html = this.cache.tpl(context);
         this.process('html', html, callback);
     }else{
@@ -273,6 +280,11 @@ Component.prototype.renderHtml = function(context, callback) {
 Component.prototype.renderCss = function(callback) {
     var self = this,
         css = this.getCss(true);
+
+    if(arguments.length < 1){
+        this.error('renderCss called with not enough arguments');
+        return;
+    }
 
     if(!this.isBaseCss){
         this.dsf.getBaseCss(function(baseCss){
@@ -345,6 +357,11 @@ Component.prototype.log = function(msg) {
 
 Component.prototype.warning = function(msg) {
     msg = logId.call(this) + ' ' + chalk.yellow(msg);
+    this.dsf.log(msg, true);
+};
+
+Component.prototype.error = function(msg) {
+    msg = logId.call(this) + ' ' + chalk.red(msg);
     this.dsf.log(msg, true);
 };
 
