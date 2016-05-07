@@ -256,7 +256,7 @@ Component.prototype.getCss = function(withDependencies) {
     return (this.cache.css || '') + ((withDependencies && this.cache.cssDependencies) ? this.cache.cssDependencies : '');
 };
 
-///@TODO make renderHtml async to pass string through .process()
+
 Component.prototype.renderHtml = function(context, callback) {
     if(this.cache.tpl){
         context = context || {};
