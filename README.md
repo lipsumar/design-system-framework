@@ -15,10 +15,11 @@ DSF is primarily a way for **front-end developers** to work and package websites
 
 If you make themes for CMS (or static pages) and want to organize the way you work, build and communicate on web components (especially with design systems), you found the right tool.
 
-* Define components made of HTML, CSS and JS
-* Styleguide-like UI 
-* Component-level build with Gulp plugins (and more to come)
-* Extensible with plugins (both for UI and build)
+* Simply define components with HTML, CSS and JS
+* Import and use existing components
+* Styleguide-like UI to develop and test 
+* Component-level build with Gulp plugins
+* Extensible with plugins (UI and build process)
 
 
 -> [Documentation](https://github.com/lipsumar/design-system-framework/wiki) <-
@@ -28,7 +29,7 @@ If you make themes for CMS (or static pages) and want to organize the way you wo
 
 #### Keep sources separate
 
-![Example of file system with DFS](resources/documentation/file-structure-example.png)
+![Example of file system with DSF](resources/documentation/file-structure-example.png)
 
 The only requirement is that you use one folder per component, the rest is up to you. Simply tell DSF how to find your HTML, CSS and JS:
 
@@ -51,23 +52,25 @@ The sources you work on in DSF is the code you are going to use in the applicati
 </div>
 ```
 
-This allows to never use hard coded values: they tend to be too perfect. DFS will also help you test your components with different values to make sure your components support names such as _Hubert Blaine Wolfeschlegelsteinhausenbergerdorff_.
+This allows to never use hard coded values: they tend to be too perfect. DSF will also help you test your components with different values to make sure your components support names such as _Hubert Blaine Wolfeschlegelsteinhausenbergerdorff_.
 
 Handlebars is used for templating.
 
 #### The styleguide is alive
 
-DFS does more than generate a styleguide from your sources: it actively watches you work and rebuilds anything that needs to. You should never have to touch your browser again.
+DSF does more than generate a styleguide from your sources: it actively watches you work and rebuilds anything that needs to. You should never have to touch your browser again.
 
-For each component DFS provides always-up-to-date HTML, CSS and JS files. These files are "standalone": they contain your base code (reset.css, your favorite CSS/JS framework) and the component's code. This way you can test faster with lighter setup and _cherry on the cake_: make sure your components do not depend on each other (tight-coupling).
+For each component DSF provides always-up-to-date HTML, CSS and JS files. These files are "standalone": they contain your base code (reset.css, your favorite CSS/JS framework) and the component's code. This way you can test faster with lighter setup and _cherry on the cake_: make sure your components do not depend on each other (tight-coupling).
+
+The UI is fully customizable.
 
 #### Dependency management
 
-DFS understands your component dependencies and will always build what you need, only what you need.
+DSF understands your component dependencies and will always build what you need, only what you need.
 
 #### Build production code
 
-Provided a small configuration, DFS can generate the smallest files possible for production. Since it enforces the separation of components, it can easily generate 2 versions of external assets: the critical path (to be inlined) and the rest (to be loaded asynchronously).
+Provided a small configuration, DSF can generate the smallest files possible for production. Since it enforces the separation of components, it can easily generate 2 versions of external assets: the critical path (to be inlined) and the rest (to be loaded asynchronously).
 
 
 **Also:**

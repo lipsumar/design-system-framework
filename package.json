@@ -1,7 +1,7 @@
 {
   "name": "design-system-framework",
-  "version": "0.4.2",
-  "description": "A simple framework to create living design systems",
+  "version": "0.5",
+  "description": "Create and maintain web component libraries for websites",
   "main": "lib/dsf.js",
   "bin": {
     "dsf": "./cli.js"
