@@ -72,7 +72,13 @@ console.log('');
             // delegate anything else to plugins
             default:
                 if(!command.name){ // except no command
-                    startServer(true);
+                    if(command.error){
+                        dsf.log.error(command.error + ': ' + command.command);
+                        process.exit(1);
+                    }else{
+                        startServer(true);
+                    }
+
                 }else{
                     dsf.log('Run plugin '+command.name);
                     cliPluginsById[command.name].func(command.options, function(){
