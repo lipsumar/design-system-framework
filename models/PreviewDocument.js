@@ -23,10 +23,16 @@ PreviewDocument.prototype.addComponent = function(component) {
 };
 
 PreviewDocument.prototype.render = function(context, callback) {
-    var self = this;
-    this.components[0].renderHtml(context, function(err, html){
-        var doc = pageTemplate({
-            component: self.components[0],
+    var self = this,
+        component = this.components[0]; // this implementation only supports 1 component
+
+    component.renderHtml(context, function(err, html){
+        var tpl = pageTemplate;
+        if(component.config.document){
+            tpl = component.getDocument();
+        }
+        var doc = tpl({
+            component: component.toJson(),
             html: html,
             cacheBust: (new Date()).getTime()
         });

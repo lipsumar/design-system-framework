@@ -30,7 +30,7 @@ function Component(options){
     this.missingPartial = false;
     this.baseDependencies = [];
     this.dependencyOf = []; // array of componentIds depending on this
-
+    this.cachedResourcePath = {};
 
 }
 Component.prototype = Object.create(ComponentBase.prototype);
@@ -42,6 +42,7 @@ Component.prototype.build = function(callback) {
         // override config with the component's own config.json
         this.addLocalConfig.bind(this),
 
+        this.cacheResourcePathes.bind(this),
         this.cacheHtml.bind(this),
         this.cacheCss.bind(this),
 
@@ -184,8 +185,10 @@ Component.prototype.registerPartial = function(callback) {
  * @return {void}
  */
 Component.prototype.getResourcePaths = function(type, callback) {
+    var self = this;
     glob(this.getGlobPath(type), function(err, files){
         if(err) throw err;
+        self.cachedResourcePath[type] = files;
         callback(null, files);
     });
 };
@@ -197,6 +200,11 @@ Component.prototype.getResourceHandler = function(type) {
         handler = handler.bind(null, this);
     }
     return handler;
+};
+
+Component.prototype.cacheResourcePathes = function(callback) {
+    var types = this.dsf.getResourceTypes();
+    async.map(types, this.getResourcePaths.bind(this), callback);
 };
 
 
@@ -346,6 +354,22 @@ function gulpTask(taskName, str, module, dest, callback){
 Component.prototype.getDestPath = function() {
     return path.join(__dirname, '../public/_built/'+this.id+'/');
 };
+
+Component.prototype.getDocument = function() {
+    if(!this.config.document){
+        return false;
+    }
+    return this.dsf.getHandlebars().compile(fs.readFileSync(path.join(this.absPath, this.config.document)).toString());
+};
+
+Component.prototype.toJson = function() {
+    var json = {
+        id: this.id,
+        resource: _.clone(this.cachedResourcePath)
+    };
+    return json;
+};
+
 
 function logId(){
     return chalk.bgBlue(' '+this.id+' ');

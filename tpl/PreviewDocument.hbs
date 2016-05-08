@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>{{component.id}}</title>
-    <link rel="stylesheet" type="text/css" href="css.css?cacheBust={{cacheBust}}">
+    <link rel="stylesheet" type="text/css" href="/build/{{component.id}}/css.css?cacheBust={{cacheBust}}">
+    {{#if component.resource.js}}
+    <script src="/build/{{component.id}}/js.js?cacheBust={{cacheBust}}"></script>
+    {{/if}}
 </head>
 <body>{{#if html}}
 
