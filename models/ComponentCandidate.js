@@ -5,6 +5,7 @@ var ComponentBase = require('./ComponentBase.js'),
 
 function ComponentCandidate(options){
     ComponentBase.call(this, options);
+    this.onFailCallback = options.onFailCallback;
 }
 ComponentCandidate.prototype = Object.create(ComponentBase.prototype);
 

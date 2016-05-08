@@ -30,7 +30,7 @@ function Component(options){
     this.missingPartial = false;
     this.baseDependencies = [];
     this.dependencyOf = []; // array of componentIds depending on this
-
+    this.cachedResourcePath = {};
 
 }
 Component.prototype = Object.create(ComponentBase.prototype);
@@ -42,6 +42,7 @@ Component.prototype.build = function(callback) {
         // override config with the component's own config.json
         this.addLocalConfig.bind(this),
 
+        this.cacheResourcePathes.bind(this),
         this.cacheHtml.bind(this),
         this.cacheCss.bind(this),
 
@@ -184,8 +185,10 @@ Component.prototype.registerPartial = function(callback) {
  * @return {void}
  */
 Component.prototype.getResourcePaths = function(type, callback) {
+    var self = this;
     glob(this.getGlobPath(type), function(err, files){
         if(err) throw err;
+        self.cachedResourcePath[type] = files;
         callback(null, files);
     });
 };
@@ -197,6 +200,11 @@ Component.prototype.getResourceHandler = function(type) {
         handler = handler.bind(null, this);
     }
     return handler;
+};
+
+Component.prototype.cacheResourcePathes = function(callback) {
+    var types = this.dsf.getResourceTypes();
+    async.map(types, this.getResourcePaths.bind(this), callback);
 };
 
 
@@ -253,16 +261,23 @@ Component.prototype.cacheHtml = function(callback) {
 // without base css
 Component.prototype.getCss = function(withDependencies) {
     // dependencies CSS after component CSS so user can't override dependencies
-    return this.cache.css + ((withDependencies && this.cache.cssDependencies) ? this.cache.cssDependencies : '');
+    return (this.cache.css || '') + ((withDependencies && this.cache.cssDependencies) ? this.cache.cssDependencies : '');
 };
 
-///@TODO make renderHtml async to pass string through .process()
+
 Component.prototype.renderHtml = function(context, callback) {
+
+    if(arguments.length < 2){
+        this.error('renderHtml called with not enough arguments');
+        return;
+    }
+
     if(this.cache.tpl){
         context = context || {};
         if(this.config.vars){
             context = _.merge({}, this.config.vars, context);
         }
+
         var html = this.cache.tpl(context);
         this.process('html', html, callback);
     }else{
@@ -273,6 +288,11 @@ Component.prototype.renderHtml = function(context, callback) {
 Component.prototype.renderCss = function(callback) {
     var self = this,
         css = this.getCss(true);
+
+    if(arguments.length < 1){
+        this.error('renderCss called with not enough arguments');
+        return;
+    }
 
     if(!this.isBaseCss){
         this.dsf.getBaseCss(function(baseCss){
@@ -335,6 +355,22 @@ Component.prototype.getDestPath = function() {
     return path.join(__dirname, '../public/_built/'+this.id+'/');
 };
 
+Component.prototype.getDocument = function() {
+    if(!this.config.document){
+        return false;
+    }
+    return this.dsf.getHandlebars().compile(fs.readFileSync(path.join(this.absPath, this.config.document)).toString());
+};
+
+Component.prototype.toJson = function() {
+    var json = {
+        id: this.id,
+        resource: _.clone(this.cachedResourcePath)
+    };
+    return json;
+};
+
+
 function logId(){
     return chalk.bgBlue(' '+this.id+' ');
 }
@@ -345,6 +381,11 @@ Component.prototype.log = function(msg) {
 
 Component.prototype.warning = function(msg) {
     msg = logId.call(this) + ' ' + chalk.yellow(msg);
+    this.dsf.log(msg, true);
+};
+
+Component.prototype.error = function(msg) {
+    msg = logId.call(this) + ' ' + chalk.red(msg);
     this.dsf.log(msg, true);
 };
 

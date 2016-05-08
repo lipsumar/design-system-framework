@@ -30,11 +30,14 @@ console.log('');
 
     function startServer(openBrowser){
         dsf.log('Starting server...');
-        require('./lib/server.js')(dsf);
-        if(openBrowser){
-            dsf.log('Open browser...');
-            require('openurl').open('http://localhost:'+dsf.server.port);
-        }
+        require('./lib/server.js')(dsf, function(){
+            dsf.log('Server started');
+            if(openBrowser){
+                dsf.log('Open browser...');
+                require('openurl').open('http://localhost:'+dsf.server.port);
+            }
+        });
+
     }
 
 
