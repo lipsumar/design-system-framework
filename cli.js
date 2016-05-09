@@ -49,9 +49,18 @@ console.log('');
         var plugins = dsf.getPlugins(),
             cliPluginsById = {};
         plugins.cli.forEach(function(plugin){
-            cliCommands.push({
-                name: plugin.id
-            });
+            var cliOpts = plugin._cliOptions;
+            if(cliOpts){
+                cliCommands.push({
+                    name: plugin.id,
+                    definitions: cliOpts
+                });
+            }else{
+                cliCommands.push({
+                    name: plugin.id
+                });
+            }
+
             cliPluginsById[plugin.id] = plugin;
         });
 
