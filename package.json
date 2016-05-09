@@ -1,6 +1,6 @@
 {
   "name": "design-system-framework",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Create and maintain web component libraries for websites",
   "main": "lib/dsf.js",
   "bin": {
