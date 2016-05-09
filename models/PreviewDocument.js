@@ -22,6 +22,7 @@ PreviewDocument.prototype.addComponent = function(component) {
     this.components.push(component);
 };
 
+///@TODO accept also a context for the document
 PreviewDocument.prototype.render = function(context, callback) {
     var self = this,
         component = this.components[0]; // this implementation only supports 1 component
