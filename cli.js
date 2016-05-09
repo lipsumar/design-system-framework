@@ -71,11 +71,11 @@ console.log('');
 
             // delegate anything else to plugins
             default:
-                if(!command.name){ // except no command
-                    if(command.error){
+                if(!command.name){
+                    if(command.error && command.command){
                         dsf.log.error(command.error + ': ' + command.command);
                         process.exit(1);
-                    }else{
+                    }else{ // except no command
                         startServer(true);
                     }
 
