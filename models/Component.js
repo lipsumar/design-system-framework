@@ -31,6 +31,10 @@ function Component(options){
     this.baseDependencies = [];
     this.dependencyOf = []; // array of componentIds depending on this
     this.cachedResourcePath = {};
+    this.variations = {
+        html: {},
+        css: {}
+    };
 
 }
 Component.prototype = Object.create(ComponentBase.prototype);
@@ -48,9 +52,6 @@ Component.prototype.build = function(callback) {
 
         // dependencies
         this.resolveDependencies.bind(this),
-
-        // register handlebars partial
-        this.registerPartial.bind(this),
 
         function(cb){
             self.loaded = true;
@@ -171,11 +172,17 @@ Component.prototype.cacheDependencies = function(callback) {
     callback();
 };
 
-Component.prototype.registerPartial = function(callback) {
-    this.dsf.getHandlebars().registerPartial(this.id, this.cache.html || '');
-    callback();
+
+Component.prototype.registerVariation = function(type, name, file) {
+    if(!this.variations[type]){
+        this.variations[type] = {};
+    }
+    this.variations[type][name] = file;
 };
 
+Component.prototype.hasVariations = function(type) {
+    return _.size(this.variations[type]) > 0;
+};
 
 
 /**
@@ -235,21 +242,58 @@ Component.prototype.cacheCss = function(cacheCssCallback) {
 
 
 Component.prototype.cacheHtml = function(callback) {
-
     var self = this;
 
     this.getResourcePaths('html',function(err, files){
         if(files.length>0){
-            //@TODO gulp is probably not needed here
-            var stream = gulp.src(self.getGlobPath('html'));
-            stream.pipe(through2.obj(function(file, enc, cb){
 
-                var html = file.contents.toString();
-                self.cache.html = html;
-                self.cache.tpl = self.dsf.getHandlebars().compile(html);
+            if(files.length>0){
+
+                if(self.hasVariations('html')){
+
+
+
+                    self.cache.html = {};
+                    self.cache.tpl = {};
+                    async.mapSeries(Object.keys(self.variations.html), function(name, cb){
+                        fs.readFile(self.variations.html[name], function(err, html){
+                            html = html.toString();
+                            self.cache.html[name] = html;
+                            self.cache.tpl[name] = self.dsf.getHandlebars().compile(html);
+                            self.dsf.getHandlebars().registerPartial(self.id + '/' + name, html);
+
+                            // override previous "index"
+                            if(name === 'index'){
+                                self.dsf.getHandlebars().registerPartial(self.id, html);
+                            }
+
+                            cb();
+                        });
+
+                    }, callback);
+
+
+                }else{
+                    // concat all
+                    async.map(files, fs.readFile, function(err, files){
+                        if(err) throw err;
+
+                        async.reduce(files, '', function(memo, item, cb){
+                            cb(null, memo + '\n' + item.toString());
+                        }, function(err, html){
+                            if(err) throw err;
+                            self.cache.html = html;
+                            self.cache.tpl = self.dsf.getHandlebars().compile(html);
+                            self.dsf.getHandlebars().registerPartial(self.id , html);
+                            callback();
+                        });
+                    });
+                }
+
+            }else{
                 callback();
+            }
 
-            }));
         }else{
             callback();
         }
@@ -265,10 +309,15 @@ Component.prototype.getCss = function(withDependencies) {
 };
 
 
-Component.prototype.renderHtml = function(context, callback) {
+Component.prototype.renderHtml = function(context, variation, callback) {
 
-    if(arguments.length < 2){
-        this.error('renderHtml called with not enough arguments');
+    if(typeof variation === 'function'){
+        callback = variation;
+        variation = null;
+    }
+
+    if(!callback){
+        this.error('renderHtml called without callback');
         return;
     }
 
@@ -278,7 +327,17 @@ Component.prototype.renderHtml = function(context, callback) {
             context = _.merge({}, this.config.vars, context);
         }
 
-        var html = this.cache.tpl(context);
+        var tpl = this.cache.tpl;
+        if(typeof tpl === 'object'){
+            tpl = this.cache.tpl.index;
+            if(this.cache.tpl[variation]){
+                tpl = this.cache.tpl[variation];
+            }else{
+                this.error('variation '+variation+' does not exist');
+            }
+
+        }
+        var html = tpl(context);
         this.process('html', html, callback);
     }else{
         callback(null, '');

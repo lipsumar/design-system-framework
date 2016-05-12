@@ -23,11 +23,16 @@ PreviewDocument.prototype.addComponent = function(component) {
 };
 
 ///@TODO accept also a context for the document
-PreviewDocument.prototype.render = function(context, callback) {
+PreviewDocument.prototype.render = function(context, variation, callback) {
+    if(typeof variation === 'function'){
+        callback = variation;
+        variation = 'index';
+    }
+
     var self = this,
         component = this.components[0]; // this implementation only supports 1 component
 
-    component.renderHtml(context, function(err, html){
+    component.renderHtml(context, variation, function(err, html){
         var tpl = pageTemplate;
         if(component.config.document){
             tpl = component.getDocument();
