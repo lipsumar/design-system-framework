@@ -23,6 +23,7 @@ PreviewDocument.prototype.addComponent = function(component) {
 };
 
 ///@TODO accept also a context for the document
+///@TODO render other types
 PreviewDocument.prototype.render = function(context, variation, callback) {
     if(typeof variation === 'function'){
         callback = variation;
