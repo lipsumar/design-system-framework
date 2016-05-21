@@ -42,6 +42,7 @@ Component.prototype = Object.create(ComponentBase.prototype);
 
 Component.prototype.build = function(callback) {
     var self = this;
+    this._onBuildDone = callback;
     async.series([
         // override config with the component's own config.json
         this.addLocalConfig.bind(this),
@@ -58,7 +59,11 @@ Component.prototype.build = function(callback) {
             cb();
         }
 
-    ], callback);
+    ], function(){
+        if(self._onBuildDone){
+            self._onBuildDone.apply(self, arguments);
+        }
+    });
 
 };
 

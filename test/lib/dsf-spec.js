@@ -27,8 +27,8 @@ module.exports = function(dsf){
         describe('#getConfig', function () {
             it('should return config', function () {
                 var mergedOptions = _.merge({}, DEFAULT_CONFIG, USER_CONFIG);
-                mergedOptions.plugins.push("plugins/dsf-doc");
-                mergedOptions.plugins.push("plugins/dsf-ui");
+                mergedOptions.plugins.unshift("plugins/dsf-doc");
+                mergedOptions.plugins.unshift("plugins/dsf-ui");
                 expect(this.subject.getConfig()).to.deep.equal(mergedOptions);
             });
         });
