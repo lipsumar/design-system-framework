@@ -152,6 +152,10 @@
     socket.on('new', function(resp){
         console.log('new', resp);
         fetchComponents(renderComponentsList);
-    })
+    });
+
+    $('.fullscreen').on('click', function(){
+        document.body.classList.add('fullscreen');
+    });
 
 }());
