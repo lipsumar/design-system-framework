@@ -21,6 +21,12 @@ button{
     font-size: 1em;
     padding: 0.5em 1em;
     margin: 0.4em;
+    transition: all 0.1s ease;
+    cursor: pointer;
+    outline:none;
+}
+button:hover{
+    transform:scale(1.1);
 }
 
 
@@ -63,6 +69,16 @@ button{
 .group__title{
     color:#006064;
     padding:0.8em 0.6em 0.8em  0.5em;
+}
+.group__title button{
+    float: right;
+    padding: 0.2em 0.3em;
+    color: white;
+    margin: 0;
+    border-radius: 100px;
+    width: 2em;
+    height: 2em;
+    margin-top: -0.3em;
 }
 .item{
     padding:0.5em 0.5em 0.5em 1.5em;
@@ -192,6 +208,63 @@ code{
 
 
 
+
+
+
+.quick-create{
+    display: flex;
+    flex-direction:column;
+    position: absolute;
+    top:50px;
+    left:50px;
+    right:50px;
+    bottom:50px;
+    background-color: #4DB6AC;
+    opacity: 0;
+    transition:all 0.12s ease;
+    pointer-events:none;
+}
+.quick-create.show{
+    opacity: 1;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    pointer-events:initial;
+}
+.quick-create input,
+.quick-create textarea{
+    padding:1em;
+    font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 1.3em;
+    background-color: #80CBC4;
+    border:none;
+    display: block;
+    outline:none;
+}
+.quick-create input:focus,
+.quick-create textarea:focus{
+    background-color: #00695C;
+    color:#fff;
+}
+
+.quick-create__name{
+
+    width:calc(100% - 128px);
+    margin:32px 64px 0;
+    text-align: center;
+}
+.quick-create__sources{
+    display: flex;
+    flex:1;
+    justify-content:space-between;
+    margin:32px 64px;
+
+}
+.quick-create__source{
+    display: block;
+    width: calc(50% - 1em);
+}
 
 
 body.fullscreen .header,

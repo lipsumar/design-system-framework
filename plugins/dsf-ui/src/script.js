@@ -26,6 +26,7 @@
 
 
 
+
     window.dsf = {
         InspectorPlugins: {},
         registerInspectorPlugin: function(pluginId, Plugin){
@@ -33,6 +34,52 @@
         }
     };
 
+    function openQuickCreate(componentName){
+        componentName = componentName || '';
+
+        $('.quick-create').classList.add('show');
+
+        $('.quick-create__name').focus();
+    }
+    function closeQuickCreate(){
+        $('.quick-create').classList.remove('show');
+    }
+    $('.quick-create__name').on('keyup', function(e){
+        if(e.code === 'Enter'){
+            fetch('/plugin/dsf-ui/quick-create', {
+                method: 'POST',
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                body: JSON.stringify({
+                    name: $('.quick-create__name').value.trim(),
+                    html: $('.quick-create__source[placeholder="HTML"]').value.trim(),
+                    css: $('.quick-create__source[placeholder="CSS"]').value.trim()
+                })
+            }).then(function(resp) {
+                return resp.json();
+            }).then(function(resp){
+                if(resp && resp.ok){
+                    closeQuickCreate();
+                    updateComponentList();
+                }else{
+                    if(resp && resp.error === 'isdir'){
+                        alert('That component exists already!');
+                    }else{
+                        alert('error :(');
+                    }
+
+                }
+            });
+        }else{
+            var name = this.value.trim();
+            $$('.quick-create__sources textarea').each(function(){
+                name = name.split('/').pop();
+                this.value = this.getAttribute('data-name-transform').replace('$1', name.toLowerCase());
+            });
+        }
+
+    });
 
     function renderComponentsList(components){
         console.log('renderComponentsList',components);
@@ -41,7 +88,7 @@
             return;
         }
 
-        var html = '<div class="group"><div class="group__title">Components</div>';
+        var html = '<div class="group"><div class="group__title">Components <button class="open-quick-create">+</button></div>';
         components.forEach(function(component){
             if(component.id.split('/')[0]==='_plugin') return;
             html+='<div class="item" data-component="'+component.id+'">'+component.id+'</div>';
@@ -53,8 +100,8 @@
             var el = e.currentTarget,
                 componentId = el.getAttribute('data-component');
             selectComponent(componentId);
-
         });
+        $('.open-quick-create').on('click', openQuickCreate);
     }
 
     function selectComponent(componentId){
@@ -83,7 +130,11 @@
             })
             .then(callback);
     }
-    fetchComponents(renderComponentsList);
+    function updateComponentList(){
+        fetchComponents(renderComponentsList);
+    }
+    updateComponentList();
+
 
 
 
