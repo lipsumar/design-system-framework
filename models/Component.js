@@ -423,7 +423,15 @@ Component.prototype.getDocument = function() {
     if(!this.config.document){
         return false;
     }
-    return this.dsf.getHandlebars().compile(fs.readFileSync(path.join(this.absPath, this.config.document)).toString());
+
+    var tplString = null;
+    try{
+        tplString = fs.readFileSync(path.join(this.absPath, this.config.document)).toString();
+    }catch(err){
+        tplString = fs.readFileSync(this.config.document).toString();
+    }
+
+    return tplString ? this.dsf.getHandlebars().compile(tplString) : false;
 };
 
 Component.prototype.toJson = function() {
